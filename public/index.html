@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Million Dollar Grid</title>
+    <style>
+        body { background-color: #f0f0f0; font-family: "Courier New", Courier, monospace; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        h1 { color: #cc0000; font-size: 32px; margin-bottom: 5px; }
+        .stats { margin-bottom: 20px; font-weight: bold; }
+        
+        /* The 1000x1000 main container */
+        #main-grid {
+            width: 1000px;
+            height: 1000px;
+            background-color: white;
+            border: 2px solid #999;
+            position: relative;
+            cursor: crosshair;
+            background-image: 
+                linear-gradient(to right, #eee 1px, transparent 1px),
+                linear-gradient(to bottom, #eee 1px, transparent 1px);
+            background-size: 10px 10px; /* Visual grid lines every 10px */
+        }
+
+        .ad-block {
+            position: absolute;
+            border: none;
+            background-size: cover;
+        }
+
+        /* Purchase Modal */
+        .overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 100;
+        }
+        .modal { background: white; padding: 20px; border-radius: 5px; width: 300px; }
+        input { width: 100%; margin: 10px 0; padding: 8px; box-sizing: border-box; }
+        button { background: #008000; color: white; padding: 10px; width: 100%; border: none; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h1>The 2026 Million Dollar Grid</h1>
+    <div class="stats">Sold: 0/1,000,000 pixels | $0 Raised</div>
+
+    <div id="main-grid" onclick="openPurchaseModal(event)">
+        </div>
+
+    <div class="overlay" id="purchaseOverlay">
+        <div class="modal">
+            <h3>Buy a 10x10 Block ($100)</h3>
+            <p id="coords-display">Coordinates: (0,0)</p>
+            <input type="text" id="imgUrl" placeholder="Image URL (10x10px)">
+            <input type="text" id="linkUrl" placeholder="Destination URL (https://...)">
+            <button onclick="submitPurchase()">Buy Block</button>
+            <button onclick="closeModal()" style="background:#888; margin-top:5px;">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        let currentX = 0;
+        let currentY = 0;
+
+        function openPurchaseModal(e) {
+            // Snap to 10px grid
+            const rect = e.target.getBoundingClientRect();
+            currentX = Math.floor((e.clientX - rect.left) / 10) * 10;
+            currentY = Math.floor((e.clientY - rect.top) / 10) * 10;
+
+            document.getElementById('coords-display').innerText = `Coordinates: (${currentX}, ${currentY})`;
+            document.getElementById('purchaseOverlay').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('purchaseOverlay').style.display = 'none';
+        }
+
+        async function submitPurchase() {
+            const img = document.getElementById('imgUrl').value;
+            const link = document.getElementById('linkUrl').value;
+
+            if(!img || !link) return alert("Fill in all fields!");
+
+            const payload = { x: currentX, y: currentY, img, link };
+
+            const response = await fetch('/api/purchase', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+
+            if(response.ok) {
+                renderBlock(payload);
+                closeModal();
+            }
+        }
+
+        function renderBlock(data) {
+            const block = document.createElement('a');
+            block.href = data.link;
+            block.target = "_blank";
+            block.className = 'ad-block';
+            block.style.left = data.x + 'px';
+            block.style.top = data.y + 'px';
+            block.style.width = '10px';
+            block.style.height = '10px';
+            block.style.backgroundImage = `url(${data.img})`;
+            block.title = data.link;
+            document.getElementById('main-grid').appendChild(block);
+        }
+
+        // Fetch existing pixels on load
+        window.onload = async () => {
+            const res = await fetch('/api/pixels');
+            const pixels = await res.json();
+            pixels.forEach(renderBlock);
+        };
+    </script>
+</body>
+</html>
