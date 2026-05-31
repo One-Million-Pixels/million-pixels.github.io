@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Living Canvas: 1 Million Pixels</title>
+    <style>
+        :root { --primary: #2ecc71; --bg: #1a1a1a; }
+        body { 
+            background-color: var(--bg); 
+            color: white; 
+            font-family: 'Inter', sans-serif; 
+            margin: 0; 
+            display: flex; flex-direction: column; align-items: center; 
+            overflow-x: hidden;
+        }
+        header { padding: 20px; text-align: center; }
+        h1 { margin: 0; color: var(--primary); font-size: 2.5rem; text-transform: uppercase; letter-spacing: 2px; }
+        
+        /* Container for the canvas to allow zooming/panning */
+        #viewport {
+            width: 90vw;
+            height: 70vh;
+            border: 2px solid #333;
+            overflow: auto;
+            background: #000;
+            position: relative;
+            cursor: crosshair;
+        }
+
+        canvas { 
+            image-rendering: pixelated; /* Keeps pixels sharp */
+            background-color: #111;
+        }
+
+        .stats { margin: 15px; font-size: 1.1rem; color: #aaa; }
+        .stats b { color: var(--primary); }
+
+        /* Modern UI Modal */
+        .overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 100;
+            backdrop-filter: blur(5px);
+        }
+        .modal { 
+            background: #222; padding: 30px; border-radius: 12px; width: 350px; 
+            border: 1px solid var(--primary); box-shadow: 0 0 20px rgba(46, 204, 113, 0.2);
+        }
+        input { 
+            width: 100%; margin: 10px 0; padding: 12px; border-radius: 6px;
+            border: 1px solid #444; background: #111; color: white;
+        }
+        .btn-buy { 
+            background: var(--primary); color: #000; padding: 12px; width: 100%; 
+            border: none; cursor: pointer; font-weight: bold; border-radius: 6px; margin-top: 10px;
+        }
+        .btn-cancel { background: transparent; color: #888; border: none; width: 100%; margin-top: 10px; cursor: pointer; }
+        
+        #tooltip {
+            position: absolute; background: rgba(0,0,0,0.8); color: white;
+            padding: 5px 10px; border-radius: 4px; pointer-events: none; font-size: 12px; display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>The Living Canvas</h1>
+        <div class="stats">
+            Pixels Claimed: <b id="stat-count">0</b> | 
+            Price: <b id="stat-price">$1.00/px</b>
+        </div>
+    </header>
+
+    <div id="viewport">
+        <canvas id="main-grid" width="1000" height="1000"></canvas>
+        <div id="tooltip"></div>
+    </div>
+
+    <div class="overlay" id="purchaseOverlay">
+        <div class="modal">
+            <h3 style="margin-top:0">Claim this Pixel</h3>
+            <p id="coords-display" style="color:#888">Coordinates: (0,0)</p>
+            <input type="color" id="pixelColor" value="#2ecc71">
+            <input type="text" id="linkUrl" placeholder="Link URL (https://...)">
+            <button class="btn-buy" onclick="submitPurchase()">Purchase for $1.00</button>
+            <button class="btn-cancel" onclick="closeModal()">Maybe later</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('main-grid');
+        const ctx = canvas.getContext('2d');
+        const tooltip = document.getElementById('tooltip');
+        let currentX = 0, currentY = 0;
+
+        // Initialize empty grid
+        ctx.fillStyle = '#111';
+        ctx.fillRect(0, 0, 1000, 1000);
+
+        // Handle Clicking a Single Pixel
+        canvas.addEventListener('mousedown', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            // Calculate actual pixel coordinates regardless of CSS scaling
+            currentX = Math.floor((e.clientX - rect.left));
+            currentY = Math.floor((e.clientY - rect.top));
+
+            document.getElementById('coords-display').innerText = `Pixel: ${currentX} x ${currentY}`;
+            document.getElementById('purchaseOverlay').style.display = 'flex';
+        });
+
+        // Tooltip for existing pixels (hover effect)
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = Math.floor(e.clientX - rect.left);
+            const y = Math.floor(e.clientY - rect.top);
+            
+            // Logic: You would check your 'pixels' array here to see if data exists
+            // For now, just show coordinates
+            tooltip.style.display = 'block';
+            tooltip.style.left = (e.clientX + 15) + 'px';
+            tooltip.style.top = (e.clientY + 15) + 'px';
+            tooltip.innerText = `Pos: ${x}, ${y}`;
+        });
+
+        function closeModal() {
+            document.getElementById('purchaseOverlay').style.display = 'none';
+        }
+
+        async function submitPurchase() {
+            const color = document.getElementById('pixelColor').value;
+            const link = document.getElementById('linkUrl').value;
+
+            // This is where you would call your actual Payment/Stripe API
+            // For now, we simulate the update:
+            const pixelData = { x: currentX, y: currentY, color, link };
+            renderPixel(pixelData);
+            closeModal();
+            updateStats();
+        }
+
+        function renderPixel(data) {
+            ctx.fillStyle = data.color;
+            // Draw an individual 1x1 pixel
+            ctx.fillRect(data.x, data.y, 1, 1);
+        }
+
+        let count = 0;
+        function updateStats() {
+            count++;
+            document.getElementById('stat-count').innerText = count.toLocaleString();
+        }
+
+        // Feature: Zooming logic could be added here to help users select pixels
+    </script>
+</body>
+</html>
