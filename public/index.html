@@ -149,14 +149,12 @@
         document.getElementById('zoomVal').innerText = this.value + 'x';
     };
 
-    // Glitch Fix: Clamp coordinates between 0 and 999
     function getCleanCoords(e) {
         const rect = grid.getBoundingClientRect();
         const scale = zoomBar.value;
         let x = Math.floor((e.clientX - rect.left) / scale);
         let y = Math.floor((e.clientY - rect.top) / scale);
         
-        // Ensure no negative values or overflow
         x = Math.max(0, Math.min(999, x));
         y = Math.max(0, Math.min(999, y));
         
@@ -178,30 +176,51 @@
 
     function closeModal() { document.getElementById('overlay').style.display = 'none'; }
 
+    // FIXED: Hits correct endpoint and routes user to the Stripe URL returned by the server
     async function processPurchase() {
         const color = document.getElementById('pColor').value;
         const link = document.getElementById('pLink').value;
 
         if(!link.startsWith('http')) return alert("Please enter a valid URL.");
 
-        const res = await fetch('/api/purchase', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ x: selX, y: selY, color, link })
-        });
+        try {
+            const res = await fetch('/create-checkout-session', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ x: selX, y: selY, color, link })
+            });
 
-        if (res.ok) {
-            renderPixel({x: selX, y: selY, color, link});
-            closeModal();
-            loadPixels();
+            if (res.ok) {
+                const data = await res.json();
+                if (data.url) {
+                    window.location.href = data.url; 
+                } else {
+                    alert("Could not generate a checkout link.");
+                }
+            } else {
+                const errData = await res.json();
+                alert("Checkout Error: " + (errData.error || "Server issue"));
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Failed to reach payment server.");
         }
     }
 
+    // FIXED: Clicking on an active pixel now opens its link cleanly without triggering a new buy modal
     function renderPixel(p) {
         const a = document.createElement('a');
-        a.href = p.link; a.target = "_blank"; a.className = 'pixel-entry';
-        a.style.left = p.x + 'px'; a.style.top = p.y + 'px';
+        a.href = p.link; 
+        a.target = "_blank"; 
+        a.className = 'pixel-entry';
+        a.style.left = p.x + 'px'; 
+        a.style.top = p.y + 'px';
         a.style.backgroundColor = p.color;
+        
+        a.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+
         grid.appendChild(a);
     }
 
