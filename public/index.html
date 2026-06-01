@@ -11,20 +11,52 @@
      crossorigin="anonymous"></script> 
 
     <style>
-        body { background-color: #fff; font-family: Verdana, Arial, Helvetica, sans-serif; margin: 0; padding: 0; }
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #fff;
+            font-family: Verdana, Arial, Helvetica, sans-serif;
+        }
         
-        .container { width: 1200px; margin: 0 auto; text-align: center; }
+        .container {
+            width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
         
-        .header-main { padding: 20px 0; border-bottom: 1px solid #ccc; margin-bottom: 10px; }
-        .header-main h1 { font-size: 32px; margin: 0; letter-spacing: -1px; }
+        .header-main {
+            padding: 20px 0;
+            border-bottom: 1px solid #ccc;
+            margin-bottom: 10px;
+        }
+        
+        .header-main h1 {
+            font-size: 32px;
+            margin: 0;
+            letter-spacing: -1px;
+        }
         
         .top-nav { 
-            background: #f4f4f4; border: 1px solid #000; padding: 10px; 
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 10px; font-weight: bold; font-size: 13px;
+            background: #f4f4f4;
+            border: 1px solid #000;
+            padding: 10px; 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-weight: bold;
+            font-size: 13px;
         }
 
-        .layout-wrapper { display: flex; gap: 15px; align-items: flex-start; }
+        .layout-wrapper {
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+            justify-content: center;
+        }
 
         .left-column {
             display: flex;
@@ -34,8 +66,21 @@
             flex-shrink: 0;
         }
 
-        .sidebar { width: 180px; text-align: left; border: 1px solid #000; padding: 10px; background: #fffde0; }
-        .sidebar h3 { font-size: 14px; margin-top: 0; border-bottom: 1px solid #000; padding-bottom: 5px; }
+        .sidebar {
+            width: 180px;
+            text-align: left;
+            border: 1px solid #000;
+            padding: 10px;
+            background: #fffde0;
+        }
+
+        .sidebar h3 {
+            font-size: 14px;
+            margin-top: 0;
+            border-bottom: 1px solid #000;
+            padding-bottom: 5px;
+        }
+
         .stat-box { margin-bottom: 15px; }
         .stat-label { font-size: 11px; color: #555; display: block; }
         .stat-value { font-size: 18px; color: #cc0000; font-weight: bold; }
@@ -47,47 +92,106 @@
             padding-top: 5px;
         }
 
-        .grid-viewport { 
-            width: 1000px; height: 1000px; overflow: auto; 
-            border: 2px solid #000; background: #fff; position: relative;
+        .grid-area {
+            width: 1000px;
+            height: 1000px;
+            border: 2px solid #000;
+            background: #fff;
+            position: relative;
+            overflow: hidden;
         }
 
         #pixel-grid {
-            width: 1000px; height: 1000px; position: relative; cursor: crosshair;
+            width: 1000px;
+            height: 1000px;
+            position: relative;
+            cursor: crosshair;
             background-image: linear-gradient(#e5e5e5 1px, transparent 1px), linear-gradient(90deg, #e5e5e5 1px, transparent 1px);
             background-size: 10px 10px;
             transform-origin: 0 0;
         }
 
-        .pixel-entry { position: absolute; width: 1px; height: 1px; z-index: 5; }
+        .pixel-entry {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            z-index: 5;
+        }
 
         .modal-overlay { 
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 1000; 
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%; 
+            background: rgba(0,0,0,0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000; 
         }
+
         .buy-modal { 
-            background: #fff; border: 3px solid #cc0000; width: 400px; 
-            text-align: left; box-shadow: 10px 10px 0px rgba(0,0,0,0.2);
+            background: #fff;
+            border: 3px solid #cc0000;
+            width: 400px; 
+            text-align: left;
+            box-shadow: 10px 10px 0px rgba(0,0,0,0.2);
         }
-        .modal-header { background: #cc0000; color: #fff; padding: 10px; font-weight: bold; }
+
+        .modal-header {
+            background: #cc0000;
+            color: #fff;
+            padding: 10px;
+            font-weight: bold;
+        }
+
         .modal-body { padding: 20px; }
         
         .field-group { margin-bottom: 15px; }
-        .field-group label { display: block; font-weight: bold; font-size: 12px; margin-bottom: 5px; }
+        .field-group label {
+            display: block;
+            font-weight: bold;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
         
         .coord-display-large { 
-            font-family: monospace; background: #000; color: #00ff00; 
-            padding: 10px; text-align: center; font-size: 16px; margin-bottom: 20px;
+            font-family: monospace;
+            background: #000;
+            color: #00ff00; 
+            padding: 10px;
+            text-align: center;
+            font-size: 16px;
+            margin-bottom: 20px;
         }
 
-        input[type="url"] { width: 94%; padding: 8px; border: 1px solid #999; }
+        input[type="url"] {
+            width: 94%;
+            padding: 8px;
+            border: 1px solid #999;
+        }
 
         .checkout-btn { 
-            background: #4CAF50; color: white; border: none; padding: 15px; 
-            width: 100%; font-size: 18px; font-weight: bold; cursor: pointer;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px; 
+            width: 100%;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
             border-bottom: 4px solid #2E7D32;
         }
-        .cancel-link { display: block; text-align: center; margin-top: 15px; color: #666; font-size: 11px; cursor: pointer; }
+
+        .cancel-link {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            color: #666;
+            font-size: 11px;
+            cursor: pointer;
+        }
 
         #urlError {
             color: red;
@@ -135,12 +239,12 @@
                      data-ad-client="ca-pub-4335653991954613"
                      data-ad-slot="1234567890"></ins>
                 <script>
-                     (adsbygoogle = window.adsbygoogle || []).push({});
+                    (adsbygoogle = window.adsbygoogle || []).push({});
                 </script>
             </div>
         </div>
 
-        <div class="grid-viewport">
+        <div class="grid-area">
             <div id="pixel-grid" onmousemove="handleHover(event)" onclick="handleGridClick(event)"></div>
         </div>
     </div>
@@ -223,7 +327,7 @@
         const urlError = document.getElementById('urlError');
 
         if (!link.startsWith('http')) {
-            urlError.innerText = 'Invalid URL';
+            urlError.innerText = 'Invalid';
             return;
         }
 
