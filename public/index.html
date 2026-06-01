@@ -9,18 +9,34 @@
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4335653991954613" crossorigin="anonymous"></script>
 
     <style>
-        body { background-color: #f0f0f0; font-family: "Courier New", Courier, monospace; margin: 0; padding: 10px; }
+        body { background-color: #f4f4f4; font-family: "Courier New", Courier, monospace; margin: 0; padding: 10px; }
         
-        .header-section { text-align: center; margin-bottom: 10px; }
-        h1 { color: #cc0000; font-size: 32px; margin: 0; }
-        .stats { font-weight: bold; margin-bottom: 15px; }
+        .header-section { text-align: center; margin-bottom: 15px; }
+        h1 { color: #cc0000; font-size: 36px; margin: 0; letter-spacing: -1px; }
+        .stats { font-weight: bold; font-size: 18px; margin: 10px 0; color: #333; }
+
+        /* Zoom Controls */
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            width: fit-content;
+            margin: 0 auto 20px auto;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        #zoomSlider { width: 150px; cursor: pointer; }
+        #zoomLabel { font-weight: bold; min-width: 30px; }
 
         .page-wrapper {
             display: flex;
             justify-content: center;
             align-items: flex-start;
             gap: 20px;
-            max-width: 1450px;
+            max-width: 1600px;
             margin: 0 auto;
         }
 
@@ -37,19 +53,27 @@
             top: 20px;
         }
 
-        /* FIXED: Exact 1000x1000 container */
+        /* Viewport holds the 1000x1000 grid and handles overflow when zoomed */
+        .grid-viewport {
+            width: 1000px;
+            height: 800px; /* Adjusted height for better vertical fit */
+            overflow: auto;
+            border: 2px solid #000;
+            background-color: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
         #main-grid {
             width: 1000px; 
             height: 1000px; 
-            background-color: white; 
-            border: 1px solid #000;
             position: relative; 
             cursor: crosshair;
-            /* Grid lines every 10px to avoid visual clutter */
+            transform-origin: top left;
+            transition: transform 0.1s ease-out;
             background-image: linear-gradient(to right, #f0f0f0 1px, transparent 1px), linear-gradient(to bottom, #f0f0f0 1px, transparent 1px);
             background-size: 10px 10px;
-            flex-shrink: 0;
-            overflow: hidden;
+            image-rendering: pixelated;
         }
 
         .pixel { 
@@ -59,20 +83,23 @@
             display: block;
         }
 
-        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 100; }
-        .modal { background: white; padding: 25px; border-radius: 8px; width: 320px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        /* Modal / Overlay */
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 1000; }
+        .modal { background: white; padding: 25px; border-radius: 12px; width: 340px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
         
-        input { width: 100%; margin: 8px 0; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
-        .color-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-        #colorPreview { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #ddd; background-color: #ff0000; }
+        input { width: 100%; margin: 10px 0; padding: 12px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
+        .color-row { display: flex; align-items: center; gap: 15px; margin: 10px 0; }
+        #colorPreview { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #ddd; background-color: #ff0000; box-shadow: inset 0 0 5px rgba(0,0,0,0.1); }
         
-        #error-msg { color: #cc0000; font-size: 12px; margin: 0; display: none; font-weight: bold; }
+        #error-msg { color: #cc0000; font-size: 13px; margin: 0 0 10px 0; display: none; font-weight: bold; }
         
-        button { background: #008000; color: white; padding: 12px; width: 100%; border: none; cursor: pointer; font-weight: bold; border-radius: 4px; font-size: 16px; }
-        button:disabled { background: #888; }
+        button { background: #008000; color: white; padding: 14px; width: 100%; border: none; cursor: pointer; font-weight: bold; border-radius: 6px; font-size: 16px; transition: background 0.2s; }
+        button:hover { background: #006400; }
+        button:disabled { background: #888; cursor: not-allowed; }
 
-        @media (max-width: 1350px) {
+        @media (max-width: 1380px) {
             .ad-column { display: none; }
+            .grid-viewport { width: 95vw; }
         }
     </style>
 </head>
@@ -81,72 +108,101 @@
     <div class="header-section">
         <h1>The Million Pixels</h1>
         <div id="stats" class="stats">Loading Grid...</div>
+        
+        <div class="controls">
+            <span>🔍 Zoom:</span>
+            <input type="range" id="zoomSlider" min="1" max="25" value="1" step="0.5" oninput="updateZoom(this.value)">
+            <span id="zoomLabel">1x</span>
+        </div>
     </div>
 
     <div class="page-wrapper">
         <div class="ad-column">
-            <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-4335653991954613" data-ad-slot="YOUR_LEFT_SLOT" data-ad-format="auto"></ins>
+            <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-4335653991954613" data-ad-slot="YOUR_LEFT_SLOT" data-ad-format="auto" data-full-width-responsive="true"></ins>
             <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
         </div>
 
-        <div id="main-grid" onclick="openPurchaseModal(event)"></div>
+        <div class="grid-viewport" id="viewport">
+            <div id="main-grid" onclick="handleGridClick(event)"></div>
+        </div>
 
         <div class="ad-column">
-            <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-4335653991954613" data-ad-slot="YOUR_RIGHT_SLOT" data-ad-format="auto"></ins>
+            <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-4335653991954613" data-ad-slot="YOUR_RIGHT_SLOT" data-ad-format="auto" data-full-width-responsive="true"></ins>
             <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
         </div>
     </div>
 
     <div class="overlay" id="purchaseOverlay">
         <div class="modal">
-            <h3>Buy Pixel ($1.00)</h3>
-            <p id="coords-display" style="font-size: 14px; color: #666;">Coordinates: (0,0)</p>
+            <h3 style="margin-top:0">Secure Your Pixel</h3>
+            <p id="coords-display" style="font-size: 16px; color: #cc0000; font-weight: bold;">Location: (0,0)</p>
             
-            <label style="font-size: 12px; font-weight: bold;">1. Color</label>
+            <label style="font-size: 12px; font-weight: bold; text-transform: uppercase;">1. Choose Color</label>
             <div class="color-row">
-                <input type="color" id="pixelColor" value="#ff0000" oninput="updatePreview(this.value)">
+                <input type="color" id="pixelColor" value="#ff0000" oninput="updatePreview(this.value)" style="width: 70px; height: 45px; padding: 2px;">
                 <div id="colorPreview"></div>
             </div>
 
-            <label style="font-size: 12px; font-weight: bold;">2. Link</label>
-            <input type="text" id="linkUrl" placeholder="https://..." oninput="hideError()">
-            <p id="error-msg">Please enter a valid URL (https://)</p>
+            <label style="font-size: 12px; font-weight: bold; text-transform: uppercase;">2. Website Link</label>
+            <input type="text" id="linkUrl" placeholder="https://www.yourlink.com" oninput="hideError()">
+            <p id="error-msg">⚠️ Invalid URL. Must start with https://</p>
             
-            <button id="buyBtn" onclick="submitPurchase()">Buy Now</button>
-            <button onclick="closeModal()" style="background:none; color: #666; margin-top:10px; border:none; text-decoration:underline; cursor:pointer;">Cancel</button>
+            <button id="buyBtn" onclick="submitPurchase()">Purchase for $1.00</button>
+            <button onclick="closeModal()" style="background:none; color: #999; margin-top:10px; border:none; text-decoration:underline; cursor:pointer; font-size: 13px;">Cancel</button>
         </div>
     </div>
 
     <script>
         let currentX = 0, currentY = 0;
+        let currentZoom = 1;
         const grid = document.getElementById('main-grid');
 
-        function updatePreview(val) { document.getElementById('colorPreview').style.backgroundColor = val; }
-        function hideError() { document.getElementById('error-msg').style.display = 'none'; }
-        
-        function openPurchaseModal(e) {
-            const rect = grid.getBoundingClientRect();
-            // Math.floor ensures we stay within the 0-999 integer range
-            currentX = Math.floor(e.clientX - rect.left);
-            currentY = Math.floor(e.clientY - rect.top);
-            
-            // Safety clamp
-            if(currentX < 0) currentX = 0; if(currentX > 999) currentX = 999;
-            if(currentY < 0) currentY = 0; if(currentY > 999) currentY = 999;
+        function updateZoom(val) {
+            currentZoom = val;
+            grid.style.transform = `scale(${val})`;
+            document.getElementById('zoomLabel').innerText = val + 'x';
+        }
 
-            document.getElementById('coords-display').innerText = `Location: ${currentX}, ${currentY}`;
+        function updatePreview(val) { 
+            document.getElementById('colorPreview').style.backgroundColor = val; 
+        }
+
+        function hideError() { 
+            document.getElementById('error-msg').style.display = 'none'; 
+        }
+        
+        function handleGridClick(e) {
+            const rect = grid.getBoundingClientRect();
+            
+            // Calculate coordinates based on the Zoom Scale
+            currentX = Math.floor((e.clientX - rect.left) / currentZoom);
+            currentY = Math.floor((e.clientY - rect.top) / currentZoom);
+            
+            // Clamp values between 0-999
+            currentX = Math.max(0, Math.min(999, currentX));
+            currentY = Math.max(0, Math.min(999, currentY));
+
+            document.getElementById('coords-display').innerText = `Location: X=${currentX}, Y=${currentY}`;
             document.getElementById('purchaseOverlay').style.display = 'flex';
         }
 
-        function closeModal() { document.getElementById('purchaseOverlay').style.display = 'none'; hideError(); }
+        function closeModal() { 
+            document.getElementById('purchaseOverlay').style.display = 'none'; 
+            hideError(); 
+        }
 
         async function submitPurchase() {
             const color = document.getElementById('pixelColor').value;
             const link = document.getElementById('linkUrl').value;
-            if(!link.startsWith('http')) { document.getElementById('error-msg').style.display = 'block'; return; }
+            
+            if(!link.startsWith('http')) { 
+                document.getElementById('error-msg').style.display = 'block'; 
+                return; 
+            }
             
             const btn = document.getElementById('buyBtn');
-            btn.innerText = "Redirecting..."; btn.disabled = true;
+            btn.innerText = "Connecting to Stripe...";
+            btn.disabled = true;
 
             try {
                 const res = await fetch('/create-checkout-session', {
@@ -156,16 +212,21 @@
                 });
                 const session = await res.json();
                 if(session.url) window.location.href = session.url;
-            } catch (e) { btn.innerText = "Error - Try Again"; btn.disabled = false; }
+            } catch (e) { 
+                btn.innerText = "Error - Try Again"; 
+                btn.disabled = false; 
+            }
         }
 
         function renderPixel(p) {
             const pix = document.createElement('a');
-            pix.href = p.link; pix.target = "_blank"; pix.className = 'pixel';
+            pix.href = p.link; 
+            pix.target = "_blank"; 
+            pix.className = 'pixel';
             pix.style.left = p.x + 'px'; 
             pix.style.top = p.y + 'px';
             pix.style.backgroundColor = p.color;
-            pix.title = `Pixel at ${p.x},${p.y}`;
+            pix.title = `Pixel: ${p.x},${p.y} - ${p.link}`;
             grid.appendChild(pix);
         }
 
@@ -175,10 +236,10 @@
                 const pixels = await res.json();
                 if(Array.isArray(pixels)) {
                     pixels.forEach(renderPixel);
-                    document.getElementById('stats').innerText = `Sold: ${pixels.length.toLocaleString()}/1,000,000 pixels`;
+                    document.getElementById('stats').innerText = `Sold: ${pixels.length.toLocaleString()} / 1,000,000 pixels`;
                 }
             } catch (err) { 
-                document.getElementById('stats').innerText = `Sold: 0/1,000,000 pixels`; 
+                document.getElementById('stats').innerText = `Sold: 0 / 1,000,000 pixels`; 
             }
         }
         loadPixels();
