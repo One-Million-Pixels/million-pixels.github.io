@@ -4,151 +4,106 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Million Dollar Homepage</title>
-    
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4335653991954613" crossorigin="anonymous"></script>
-
     <style>
-        body { background-color: #fff; font-family: Arial, sans-serif; margin: 0; padding: 0; text-align: center; }
-        
-        .header { width: 1000px; margin: 0 auto; text-align: left; padding: 10px 0; border-bottom: 1px solid #ccc; }
-        h1 { font-size: 20px; margin: 0; }
-        .stats { font-size: 14px; color: #cc0000; font-weight: bold; }
-
-        /* Zoom Toolbar - NECESSARY to see 1px boxes */
-        .zoom-bar { background: #f0f0f0; padding: 10px; border-bottom: 1px solid #ddd; }
-        #zoomRange { width: 300px; }
-
-        .container { width: 1000px; margin: 20px auto; overflow: auto; border: 2px solid #000; height: 800px; position: relative; }
-
-        /* THE GRID: Exactly 1000x1000 = 1,000,000 pixels */
+        body { background-color: #fff; font-family: Verdana, Arial, sans-serif; margin: 0; padding: 0; text-align: center; }
+        .header { width: 1000px; margin: 0 auto; text-align: left; padding: 10px 0; }
+        h1 { font-size: 24px; margin: 0; color: #000; }
+        .stats-text { font-size: 14px; font-weight: bold; color: #cc0000; }
+        .main-area { width: 1000px; margin: 0 auto; position: relative; }
         #pixel-grid {
-            width: 1000px;
-            height: 1000px;
-            position: relative;
-            transform-origin: top left;
-            cursor: crosshair;
-            
-            /* THIS CREATES 1,000,000 ACTUAL BOXES */
-            /* Every 1 pixel, there is a tiny gray line */
-            background-image: 
-                linear-gradient(to right, #eeeeee 1px, transparent 1px), 
-                linear-gradient(to bottom, #eeeeee 1px, transparent 1px);
-            background-size: 1px 1px; 
-            
-            background-color: #fff;
-            image-rendering: pixelated; /* Forces browser to respect the 1px size */
+            width: 1000px; height: 1000px; border: 2px solid #000;
+            background-color: #fff; position: relative; cursor: crosshair;
+            background-image: linear-gradient(#e5e5e5 1px, transparent 1px), linear-gradient(90deg, #e5e5e5 1px, transparent 1px);
+            background-size: 10px 10px;
         }
-
-        /* Sold Pixels - Exactly 1px by 1px */
-        .sold { position: absolute; width: 1px; height: 1px; z-index: 10; }
-
-        /* Modal */
-        .modal-bg { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 1000; }
-        .modal { background: #fff; padding: 20px; border: 2px solid #000; width: 300px; text-align: left; }
-        .coords { font-family: monospace; background: #eee; padding: 5px; display: block; margin-bottom: 10px; font-weight: bold; }
-        
-        .color-preview { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-        #preview { width: 30px; height: 30px; border: 1px solid #000; background: #ff0000; }
-        
-        input[type="text"] { width: 100%; padding: 8px; box-sizing: border-box; margin-bottom: 15px; }
-        .buy-btn { background: #ff0000; color: #fff; border: none; padding: 10px; width: 100%; font-weight: bold; cursor: pointer; }
+        .pixel-entry { position: absolute; width: 1px; height: 1px; z-index: 5; }
+        .modal-overlay { 
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 1000; 
+        }
+        .buy-modal { background: #fff; padding: 20px; border: 2px solid #000; width: 300px; text-align: left; }
+        .coord-pill { background: #ffff00; font-weight: bold; padding: 5px; display: block; margin-bottom: 15px; border: 1px solid #000; font-size: 12px; }
+        input[type="text"] { width: 92%; padding: 8px; margin: 10px 0; border: 1px solid #ccc; }
+        .confirm-btn { background: #ff0000; color: #fff; border: none; padding: 10px; width: 100%; font-weight: bold; cursor: pointer; font-size: 16px; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>THE MILLION DOLLAR HOMEPAGE</h1>
-        <div id="pixel-stats" class="stats">SOLD: 0 / 1,000,000 PIXELS</div>
+        <h1>The Million Dollar Homepage</h1>
+        <div id="pixel-stats" class="stats-text">Sold: 0 / 1,000,000 pixels</div>
     </div>
 
-    <div class="zoom-bar">
-        <label>ZOOM TO SEE INDIVIDUAL PIXELS: </label>
-        <input type="range" id="zoomRange" min="1" max="50" value="1" oninput="updateZoom(this.value)">
-        <span id="zoomLabel">1x</span>
+    <div class="main-area">
+        <div id="pixel-grid" onclick="pixelClicked(event)"></div>
     </div>
 
-    <div class="container">
-        <div id="pixel-grid" onclick="openBuy(event)"></div>
-    </div>
-
-    <div class="modal-bg" id="modal">
-        <div class="modal">
-            <h3 style="margin-top:0">BUY THIS PIXEL</h3>
-            <span class="coords" id="displayCoords">X:0, Y:0</span>
+    <div class="modal-overlay" id="overlay">
+        <div class="buy-modal">
+            <h3 style="margin-top:0">Buy This Pixel</h3>
+            <div id="coord-display" class="coord-pill">X:0, Y:0 (Pixel #0)</div>
             
-            <label>Color:</label>
-            <div class="color-preview">
-                <input type="color" id="colorPicker" value="#ff0000" oninput="document.getElementById('preview').style.background=this.value">
-                <div id="preview"></div>
-            </div>
-
-            <label>Your Link:</label>
-            <input type="text" id="siteLink" placeholder="https://example.com">
+            <label>Pixel Color:</label>
+            <input type="color" id="pColor" value="#ff0000" style="width: 100%; height: 40px; border: 1px solid #000; margin: 5px 0 15px 0;">
             
-            <button class="buy-btn" onclick="startPay()">Buy for $1.00</button>
-            <p onclick="document.getElementById('modal').style.display='none'" style="text-align:center; text-decoration:underline; cursor:pointer; font-size:12px;">Cancel</p>
+            <label>Your Link (HTTPS):</label>
+            <input type="text" id="pLink" placeholder="https://example.com">
+            
+            <button class="confirm-btn" onclick="submitPurchase()">Purchase Pixel</button>
+            <p onclick="closeModal()" style="text-align:center; text-decoration:underline; cursor:pointer; font-size: 12px; margin-top:10px;">Cancel</p>
         </div>
     </div>
 
     <script>
-        let selX = 0, selY = 0, currentZoom = 1;
+        let selX = 0, selY = 0;
         const grid = document.getElementById('pixel-grid');
 
-        function updateZoom(val) {
-            currentZoom = val;
-            grid.style.transform = `scale(${val})`;
-            document.getElementById('zoomLabel').innerText = val + 'x';
-        }
-
-        function openBuy(e) {
+        function pixelClicked(e) {
             const rect = grid.getBoundingClientRect();
-            // This captures the EXACT 1px coordinate by dividing out the zoom
-            selX = Math.floor((e.clientX - rect.left) / currentZoom);
-            selY = Math.floor((e.clientY - rect.top) / currentZoom);
+            selX = Math.floor(e.clientX - rect.left);
+            selY = Math.floor(e.clientY - rect.top);
+            
+            if(selX < 0) selX = 0; if(selX > 999) selX = 999;
+            if(selY < 0) selY = 0; if(selY > 999) selY = 999;
 
-            // Bounds check
-            selX = Math.max(0, Math.min(999, selX));
-            selY = Math.max(0, Math.min(999, selY));
-
-            document.getElementById('displayCoords').innerText = `Location: X=${selX}, Y=${selY}`;
-            document.getElementById('modal').style.display = 'flex';
+            const pixelNum = (selY * 1000) + selX + 1;
+            document.getElementById('coord-display').innerText = `Location: X=${selX}, Y=${selY} (Pixel #${pixelNum.toLocaleString()})`;
+            document.getElementById('overlay').style.display = 'flex';
         }
 
-        async function startPay() {
-            const color = document.getElementById('colorPicker').value;
-            const link = document.getElementById('siteLink').value;
-            if(!link.startsWith('https://')) { alert("Must use https://"); return; }
+        function closeModal() { document.getElementById('overlay').style.display = 'none'; }
 
-            try {
-                const res = await fetch('/create-checkout-session', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ x: selX, y: selY, color, link })
-                });
-                const session = await res.json();
-                if(session.url) window.location.href = session.url;
-            } catch(e) { console.error(e); }
+        async function submitPurchase() {
+            const color = document.getElementById('pColor').value;
+            const link = document.getElementById('pLink').value;
+            if(!link.startsWith('https://')) return alert("Use https://");
+
+            const res = await fetch('/api/purchase', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ x: selX, y: selY, color, link })
+            });
+            if (res.ok) {
+                renderPixel({x: selX, y: selY, color, link});
+                closeModal();
+            }
         }
 
-        function drawPixel(p) {
+        function renderPixel(p) {
             const a = document.createElement('a');
-            a.href = p.link; a.target = "_blank"; a.className = 'sold';
+            a.href = p.link; a.target = "_blank"; a.className = 'pixel-entry';
             a.style.left = p.x + 'px'; a.style.top = p.y + 'px';
-            a.style.backgroundColor = p.color;
+            a.style.backgroundColor = p.color; a.title = `Pixel at ${p.x},${p.y} - ${p.link}`;
             grid.appendChild(a);
         }
 
-        async function load() {
-            try {
-                const res = await fetch('/api/pixels');
-                const data = await res.json();
-                if(Array.isArray(data)) {
-                    data.forEach(drawPixel);
-                    document.getElementById('pixel-stats').innerText = `SOLD: ${data.length.toLocaleString()} / 1,000,000 PIXELS`;
-                }
-            } catch(e) {}
+        async function loadPixels() {
+            const res = await fetch('/api/pixels');
+            const data = await res.json();
+            data.forEach(renderPixel);
+            document.getElementById('pixel-stats').innerText = `Sold: ${data.length.toLocaleString()} / 1,000,000 pixels`;
         }
-        load();
+        loadPixels();
     </script>
 </body>
 </html>
