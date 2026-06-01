@@ -13,7 +13,6 @@
     <style>
         body { background-color: #fff; font-family: Verdana, Arial, Helvetica, sans-serif; margin: 0; padding: 0; }
         
-        /* Centered container for your main content */
         .container { width: 1200px; margin: 0 auto; text-align: center; }
         
         .header-main { padding: 20px 0; border-bottom: 1px solid #ccc; margin-bottom: 10px; }
@@ -27,20 +26,28 @@
 
         .layout-wrapper { display: flex; gap: 15px; align-items: flex-start; }
 
-        /* Left Sidebar (Where your stats and your ad now live) */
+        /* NEW: Left column wrapper to stack the stats box and the ad cleanly */
+        .left-column {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 202px; /* Matches the sidebar width + its borders */
+            flex-shrink: 0;
+        }
+
+        /* Left Sidebar (The yellow stats box) */
         .sidebar { width: 180px; text-align: left; border: 1px solid #000; padding: 10px; background: #fffde0; }
         .sidebar h3 { font-size: 14px; margin-top: 0; border-bottom: 1px solid #000; padding-bottom: 5px; }
         .stat-box { margin-bottom: 15px; }
         .stat-label { font-size: 11px; color: #555; display: block; }
         .stat-value { font-size: 18px; color: #cc0000; font-weight: bold; }
 
-        /* NEW: Container to neatly align and pad the ad slot inside the sidebar */
-        .sidebar-ad-box {
-            margin-top: 20px;
+        /* NEW: Clean container for the ad right below the box */
+        .standalone-ad-box {
+            width: 100%;
             text-align: center;
             background: #fff;
-            border: 1px dashed #bbb;
-            padding: 5px 0;
+            padding-top: 5px;
         }
 
         /* Grid Viewport */
@@ -105,20 +112,24 @@
     </div>
 
     <div class="layout-wrapper">
-        <div class="sidebar">
-            <h3>PIXEL STATS</h3>
-            <div class="stat-box">
-                <span class="stat-label">Sold:</span>
-                <span id="stat-sold" class="stat-value">0</span>
+        
+        <div class="left-column">
+            
+            <div class="sidebar">
+                <h3>PIXEL STATS</h3>
+                <div class="stat-box">
+                    <span class="stat-label">Sold:</span>
+                    <span id="stat-sold" class="stat-value">0</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">Available:</span>
+                    <span id="stat-stock" class="stat-value">1,000,000</span>
+                </div>
+                <hr>
+                <p style="font-size: 10px;">Click an empty pixel to purchase.</p>
             </div>
-            <div class="stat-box">
-                <span class="stat-label">Available:</span>
-                <span id="stat-stock" class="stat-value">1,000,000</span>
-            </div>
-            <hr>
-            <p style="font-size: 10px;">Click an empty pixel to purchase.</p>
 
-            <div class="sidebar-ad-box">
+            <div class="standalone-ad-box">
                 <ins class="adsbygoogle"
                      style="display:inline-block;width:160px;height:600px;"
                      data-ad-client="ca-pub-4335653991954613"
@@ -127,6 +138,7 @@
                      (adsbygoogle = window.adsbygoogle || []).push({});
                 </script>
             </div>
+            
         </div>
 
         <div class="grid-viewport">
@@ -163,16 +175,19 @@
     const zoomBar = document.getElementById('zoomBar');
     const hoverTracker = document.getElementById('hover-tracker');
 
+    // Stats updates
     function updateStats(totalSold) {
         document.getElementById('stat-sold').innerText = totalSold.toLocaleString();
         document.getElementById('stat-stock').innerText = (1000000 - totalSold).toLocaleString();
     }
 
+    // Zoom adjustments
     zoomBar.oninput = function() {
         grid.style.transform = `scale(${this.value})`;
         document.getElementById('zoomVal').innerText = this.value + 'x';
     };
 
+    // Coordinate mapping logic
     function getCleanCoords(e) {
         const rect = grid.getBoundingClientRect();
         const scale = zoomBar.value;
@@ -200,6 +215,7 @@
 
     function closeModal() { document.getElementById('overlay').style.display = 'none'; }
 
+    // Checkout processing
     async function processPurchase() {
         const color = document.getElementById('pColor').value;
         const link = document.getElementById('pLink').value;
@@ -230,6 +246,7 @@
         }
     }
 
+    // Canvas mapping rendering
     function renderPixel(p) {
         const a = document.createElement('a');
         a.href = p.link; 
