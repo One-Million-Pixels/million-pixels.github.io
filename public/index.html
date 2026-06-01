@@ -6,43 +6,92 @@
     <title>The Million Pixels</title>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4335653991954613" crossorigin="anonymous"></script>
+
     <style>
-        body { background-color: #f0f0f0; font-family: "Courier New", Courier, monospace; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        h1 { color: #cc0000; font-size: 32px; margin-bottom: 5px; }
-        .stats { margin-bottom: 20px; font-weight: bold; }
+        body { background-color: #f0f0f0; font-family: "Courier New", Courier, monospace; margin: 0; padding: 10px; }
         
+        .header-section { text-align: center; margin-bottom: 10px; }
+        h1 { color: #cc0000; font-size: 32px; margin: 0; }
+        .stats { font-weight: bold; margin-bottom: 15px; }
+
+        /* The Triple Column Layout */
+        .page-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .ad-column {
+            width: 160px; /* Standard Skyscraper Width */
+            min-width: 160px;
+            height: 600px;
+            background: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px dashed #bbb;
+            position: sticky;
+            top: 20px;
+        }
+
         #main-grid {
             width: 1000px; height: 1000px; background-color: white; border: 2px solid #999;
             position: relative; cursor: crosshair;
             background-image: linear-gradient(to right, #eee 1px, transparent 1px), linear-gradient(to bottom, #eee 1px, transparent 1px);
             background-size: 10px 10px;
+            flex-shrink: 0;
         }
 
+        /* Modal & UI Elements */
         .pixel { position: absolute; width: 1px; height: 1px; }
         .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 100; }
-        
         .modal { background: white; padding: 25px; border-radius: 8px; width: 320px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-        .modal h3 { margin-top: 0; color: #333; }
-        
         input { width: 100%; margin: 8px 0; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
-        
-        /* Color Preview Swatch */
         .color-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
         #colorPreview { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #ddd; background-color: #ff0000; }
-        
         #error-msg { color: #cc0000; font-size: 12px; margin: 0; display: none; font-weight: bold; }
+        button { background: #008000; color: white; padding: 12px; width: 100%; border: none; cursor: pointer; font-weight: bold; border-radius: 4px; font-size: 16px; }
         
-        button { background: #008000; color: white; padding: 12px; width: 100%; border: none; cursor: pointer; font-weight: bold; border-radius: 4px; font-size: 16px; transition: 0.2s; }
-        button:hover { background: #006400; }
-        button:disabled { background: #888; cursor: not-allowed; }
+        /* Hide ads on small screens to keep grid clickable */
+        @media (max-width: 1300px) {
+            .ad-column { display: none; }
+        }
     </style>
 </head>
 <body>
 
-    <h1>The Million Pixels</h1>
-    <div id="stats" class="stats">Loading pixels...</div>
+    <div class="header-section">
+        <h1>The Million Pixels</h1>
+        <div id="stats" class="stats">Loading pixels...</div>
+    </div>
 
-    <div id="main-grid" onclick="openPurchaseModal(event)"></div>
+    <div class="page-wrapper">
+        <div class="ad-column">
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-client="ca-pub-4335653991954613"
+                 data-ad-slot="YOUR_LEFT_AD_SLOT_ID"
+                 data-ad-format="auto"
+                 data-full-width-responsive="true"></ins>
+            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        </div>
+
+        <div id="main-grid" onclick="openPurchaseModal(event)"></div>
+
+        <div class="ad-column">
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-client="ca-pub-4335653991954613"
+                 data-ad-slot="YOUR_RIGHT_AD_SLOT_ID"
+                 data-ad-format="auto"
+                 data-full-width-responsive="true"></ins>
+            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        </div>
+    </div>
 
     <div class="overlay" id="purchaseOverlay">
         <div class="modal">
@@ -51,7 +100,7 @@
             
             <label style="font-size: 12px; font-weight: bold;">Step 1: Pick Color</label>
             <div class="color-row">
-                <input type="color" id="pixelColor" value="#ff0000" oninput="updatePreview(this.value)" style="width: 60px; height: 40px; padding: 2px; cursor: pointer;">
+                <input type="color" id="pixelColor" value="#ff0000" oninput="updatePreview(this.value)">
                 <div id="colorPreview"></div>
             </div>
 
@@ -60,7 +109,7 @@
             <p id="error-msg">Invalid website. Must start with https://</p>
             
             <button id="buyBtn" onclick="submitPurchase()">Purchase Pixel</button>
-            <button onclick="closeModal()" style="background:#f0f0f0; color: #333; margin-top:10px; font-size: 14px;">Cancel</button>
+            <button onclick="closeModal()" style="background:#f0f0f0; color: #333; margin-top:10px; font-size: 14px; width: 100%; border: none; padding: 10px; cursor: pointer;">Cancel</button>
         </div>
     </div>
 
@@ -68,14 +117,9 @@
         let currentX = 0, currentY = 0;
         const grid = document.getElementById('main-grid');
 
-        function updatePreview(val) {
-            document.getElementById('colorPreview').style.backgroundColor = val;
-        }
-
-        function hideError() {
-            document.getElementById('error-msg').style.display = 'none';
-        }
-
+        function updatePreview(val) { document.getElementById('colorPreview').style.backgroundColor = val; }
+        function hideError() { document.getElementById('error-msg').style.display = 'none'; }
+        
         function openPurchaseModal(e) {
             const rect = grid.getBoundingClientRect();
             currentX = Math.floor(e.clientX - rect.left);
@@ -84,23 +128,14 @@
             document.getElementById('purchaseOverlay').style.display = 'flex';
         }
 
-        function closeModal() { 
-            document.getElementById('purchaseOverlay').style.display = 'none'; 
-            hideError();
-        }
+        function closeModal() { document.getElementById('purchaseOverlay').style.display = 'none'; hideError(); }
 
         async function submitPurchase() {
             const color = document.getElementById('pixelColor').value;
             const link = document.getElementById('linkUrl').value;
-            const errorText = document.getElementById('error-msg');
+            if(!link.startsWith('http')) { document.getElementById('error-msg').style.display = 'block'; return; }
+            
             const btn = document.getElementById('buyBtn');
-
-            // Inline validation instead of alert
-            if(!link.startsWith('http')) {
-                errorText.style.display = 'block';
-                return;
-            }
-
             btn.innerText = "Connecting to Stripe...";
             btn.disabled = true;
 
@@ -112,10 +147,7 @@
                 });
                 const session = await res.json();
                 if(session.url) window.location.href = session.url;
-            } catch (e) {
-                btn.innerText = "Error - Try Again";
-                btn.disabled = false;
-            }
+            } catch (e) { btn.innerText = "Error - Try Again"; btn.disabled = false; }
         }
 
         function renderPixel(p) {
@@ -123,7 +155,7 @@
             div.href = p.link; div.target = "_blank"; div.className = 'pixel';
             div.style.left = p.x + 'px'; div.style.top = p.y + 'px';
             div.style.backgroundColor = p.color;
-            div.title = `Coordinates: ${p.x},${p.y}`;
+            div.title = `Pixel at ${p.x},${p.y}`;
             grid.appendChild(div);
         }
 
@@ -135,9 +167,7 @@
                     pixels.forEach(renderPixel);
                     document.getElementById('stats').innerText = `Sold: ${pixels.length}/1,000,000 pixels | $${pixels.length} Raised`;
                 }
-            } catch (err) { 
-                document.getElementById('stats').innerText = `Sold: 0/1,000,000 pixels | $0 Raised`;
-            }
+            } catch (err) { document.getElementById('stats').innerText = `Sold: 0/1,000,000 pixels | $0 Raised`; }
         }
         loadPixels();
     </script>
