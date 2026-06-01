@@ -9,11 +9,11 @@
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4335653991954613" crossorigin="anonymous"></script>
 
     <style>
-        body { background-color: #f0f2f5; font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 10px; color: #333; }
+        body { background-color: #f8f9fa; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 10px; overflow-x: hidden; }
         
-        .header-section { text-align: center; margin-bottom: 10px; }
-        h1 { color: #cc0000; font-size: 38px; margin: 0; font-weight: 900; letter-spacing: -1.5px; }
-        .stats { font-weight: bold; font-size: 1.1rem; margin: 10px 0; color: #555; }
+        .header-section { text-align: center; margin-bottom: 15px; }
+        h1 { color: #cc0000; font-size: 32px; margin: 0; font-weight: 800; }
+        .stats { font-weight: bold; margin: 10px 0; color: #444; background: #fff; display: inline-block; padding: 5px 15px; border-radius: 20px; border: 1px solid #ddd; }
 
         /* Zoom Toolbar */
         .toolbar {
@@ -21,23 +21,22 @@
             justify-content: center;
             align-items: center;
             gap: 15px;
-            background: #ffffff;
-            padding: 12px 25px;
+            background: white;
+            padding: 10px 25px;
             border-radius: 50px;
             width: fit-content;
             margin: 0 auto 20px auto;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            border: 1px solid #ddd;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
-        #zoomSlider { width: 180px; cursor: pointer; accent-color: #cc0000; }
-        #zoomLabel { font-family: monospace; font-weight: bold; width: 40px; }
+        #zoomSlider { width: 200px; cursor: pointer; accent-color: #cc0000; }
+        #zoomLabel { font-family: monospace; font-weight: bold; width: 45px; color: #cc0000; }
 
         .page-wrapper {
             display: flex;
             justify-content: center;
             align-items: flex-start;
             gap: 20px;
-            max-width: 1600px;
+            max-width: 1500px;
             margin: 0 auto;
         }
 
@@ -45,27 +44,24 @@
             width: 160px;
             min-width: 160px;
             height: 600px;
-            background: #e8e8e8;
+            background: #eee;
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 1px dashed #bbb;
+            border: 1px dashed #ccc;
             position: sticky;
             top: 20px;
-            font-size: 12px;
-            color: #999;
         }
 
-        /* Viewport to handle the 1,000,000 pixel scroll */
+        /* Viewport fixes the "glitching" by containing the zoom */
         .grid-viewport {
             width: 1000px;
-            height: 75vh;
+            height: 70vh;
             overflow: auto;
-            border: 3px solid #222;
+            border: 2px solid #222;
             background-color: #fff;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
             position: relative;
-            cursor: crosshair;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
 
         #main-grid {
@@ -73,24 +69,11 @@
             height: 1000px; 
             position: relative; 
             transform-origin: top left;
-            transition: transform 0.1s ease-out;
-            /* DRAWING EVERY SINGLE PIXEL BOX */
-            background-image: 
-                linear-gradient(to right, #e5e5e5 1px, transparent 1px), 
-                linear-gradient(to bottom, #e5e5e5 1px, transparent 1px);
-            background-size: 1px 1px; /* This makes the 1 million boxes */
-            image-rendering: pixelated;
-        }
-
-        /* Hover Guide: Makes it easier to see which pixel you are on */
-        #main-grid:hover::after {
-            content: "";
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            pointer-events: none;
-            background-image: radial-gradient(circle, rgba(204,0,0,0.3) 1px, transparent 1px);
+            /* SVG Background - This creates the 1,000,000 tiny boxes without glitching */
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"><rect width="1" height="1" fill="white" stroke="rgba(0,0,0,0.05)" stroke-width="0.1"/></svg>');
             background-size: 1px 1px;
+            image-rendering: pixelated;
+            will-change: transform;
         }
 
         .pixel-link { 
@@ -98,49 +81,59 @@
             width: 1px; 
             height: 1px; 
             display: block;
-            z-index: 5;
+            z-index: 10;
         }
 
-        /* Modal / UI */
-        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 9999; }
-        .modal { background: white; padding: 30px; border-radius: 16px; width: 350px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); border: 1px solid #eee; }
+        /* Hover effect that scales with zoom */
+        #main-grid:hover::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            background-image: radial-gradient(circle, rgba(204,0,0,0.5) 0.5px, transparent 0.5px);
+            background-size: 1px 1px;
+        }
+
+        /* Modal / Form */
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 9999; }
+        .modal { background: white; padding: 30px; border-radius: 15px; width: 340px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+        h3 { margin-top: 0; text-align: center; color: #222; }
+        .coord-pill { background: #fff0f0; color: #cc0000; padding: 5px 10px; border-radius: 5px; font-weight: bold; text-align: center; margin-bottom: 20px; font-family: monospace; }
         
-        h3 { margin-top: 0; font-size: 24px; color: #222; }
-        label { font-size: 11px; font-weight: bold; text-transform: uppercase; color: #666; letter-spacing: 0.5px; }
-        input { width: 100%; margin: 10px 0 20px 0; padding: 14px; box-sizing: border-box; border: 2px solid #eee; border-radius: 8px; font-size: 14px; outline: none; }
-        input:focus { border-color: #cc0000; }
+        label { font-size: 11px; font-weight: bold; color: #888; text-transform: uppercase; }
+        input { width: 100%; margin: 8px 0 20px 0; padding: 12px; box-sizing: border-box; border: 2px solid #eee; border-radius: 8px; font-size: 14px; }
         
         .color-row { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
-        #colorPreview { width: 50px; height: 50px; border-radius: 10px; border: 2px solid #ddd; background-color: #ff0000; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        #colorPreview { width: 50px; height: 50px; border-radius: 8px; border: 2px solid #ddd; background-color: #ff0000; }
         
-        #error-msg { color: #cc0000; font-size: 13px; margin: -10px 0 15px 0; display: none; font-weight: bold; }
+        #error-msg { color: #cc0000; font-size: 12px; margin-top: -15px; margin-bottom: 15px; display: none; font-weight: bold; }
         
-        .buy-btn { background: #008000; color: white; padding: 16px; width: 100%; border: none; cursor: pointer; font-weight: bold; border-radius: 8px; font-size: 18px; box-shadow: 0 4px 0 #005a00; }
-        .buy-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #005a00; }
-        .buy-btn:disabled { background: #ccc; box-shadow: none; cursor: not-allowed; }
+        .buy-btn { background: #28a745; color: white; padding: 15px; width: 100%; border: none; cursor: pointer; font-weight: bold; border-radius: 8px; font-size: 18px; transition: 0.2s; }
+        .buy-btn:hover { background: #218838; }
 
-        @media (max-width: 1380px) {
+        @media (max-width: 1350px) {
             .ad-column { display: none; }
-            .grid-viewport { width: 98vw; }
+            .grid-viewport { width: 95vw; }
         }
     </style>
 </head>
 <body>
 
     <div class="header-section">
-        <h1>THE MILLION PIXELS</h1>
-        <div id="stats" class="stats">Loading 1,000,000 Pixels...</div>
+        <h1>The Million Pixels</h1>
+        <div id="stats" class="stats">Initializing Grid...</div>
         
         <div class="toolbar">
             <span>🔍 ZOOM:</span>
-            <input type="range" id="zoomSlider" min="1" max="40" value="1" step="1" oninput="updateZoom(this.value)">
+            <input type="range" id="zoomSlider" min="1" max="50" value="1" step="1" oninput="updateZoom(this.value)">
             <span id="zoomLabel">1x</span>
         </div>
     </div>
 
     <div class="page-wrapper">
         <div class="ad-column">
-            <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-4335653991954613" data-ad-slot="YOUR_LEFT_SLOT" data-ad-format="auto" data-full-width-responsive="true"></ins>
+            <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-4335653991954613" data-ad-slot="YOUR_LEFT_SLOT" data-ad-format="auto"></ins>
             <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
         </div>
 
@@ -149,7 +142,7 @@
         </div>
 
         <div class="ad-column">
-            <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-4335653991954613" data-ad-slot="YOUR_RIGHT_SLOT" data-ad-format="auto" data-full-width-responsive="true"></ins>
+            <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-4335653991954613" data-ad-slot="YOUR_RIGHT_SLOT" data-ad-format="auto"></ins>
             <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
         </div>
     </div>
@@ -157,50 +150,43 @@
     <div class="overlay" id="purchaseOverlay">
         <div class="modal">
             <h3>Buy This Pixel</h3>
-            <p id="coords-display" style="font-family: monospace; font-size: 18px; color: #cc0000; background: #fff1f1; padding: 5px; border-radius: 4px; text-align: center;">X:0, Y:0</p>
+            <div id="coords-display" class="coord-pill">X: 0, Y: 0</div>
             
             <label>1. Pixel Color</label>
             <div class="color-row">
-                <input type="color" id="pixelColor" value="#ff0000" oninput="updatePreview(this.value)" style="width: 80px; height: 50px; padding: 0; border: none; cursor: pointer; background: none;">
+                <input type="color" id="pixelColor" value="#ff0000" oninput="updatePreview(this.value)" style="width: 80px; height: 50px; cursor: pointer; padding: 0; background: none; border: none;">
                 <div id="colorPreview"></div>
             </div>
 
-            <label>2. Your Link (HTTPS only)</label>
-            <input type="text" id="linkUrl" placeholder="https://www.example.com" oninput="hideError()">
+            <label>2. Your Website Link</label>
+            <input type="text" id="linkUrl" placeholder="https://www.yourdomain.com" oninput="hideError()">
             <p id="error-msg">⚠️ Link must start with https://</p>
             
             <button id="buyBtn" class="buy-btn" onclick="submitPurchase()">Purchase for $1.00</button>
-            <button onclick="closeModal()" style="background:none; color: #999; margin-top:15px; border:none; text-decoration:underline; cursor:pointer; font-size: 14px; width: 100%;">Cancel</button>
+            <button onclick="closeModal()" style="background:none; color: #aaa; margin-top:15px; border:none; text-decoration:underline; cursor:pointer; font-size: 13px; width: 100%;">Cancel</button>
         </div>
     </div>
 
     <script>
-        let currentX = 0, currentY = 0;
-        let currentZoom = 1;
+        let currentX = 0, currentY = 0, currentZoom = 1;
         const grid = document.getElementById('main-grid');
 
         function updateZoom(val) {
-            currentZoom = val;
-            grid.style.transform = `scale(${val})`;
+            currentZoom = parseFloat(val);
+            grid.style.transform = `scale(${currentZoom})`;
             document.getElementById('zoomLabel').innerText = val + 'x';
         }
 
-        function updatePreview(val) { 
-            document.getElementById('colorPreview').style.backgroundColor = val; 
-        }
-
-        function hideError() { 
-            document.getElementById('error-msg').style.display = 'none'; 
-        }
+        function updatePreview(val) { document.getElementById('colorPreview').style.backgroundColor = val; }
+        function hideError() { document.getElementById('error-msg').style.display = 'none'; }
         
         function handleGridClick(e) {
             const rect = grid.getBoundingClientRect();
-            
-            // MATH: Account for zoom to find the REAL pixel coordinate
+            // Calculate absolute pixel position based on scale
             currentX = Math.floor((e.clientX - rect.left) / currentZoom);
             currentY = Math.floor((e.clientY - rect.top) / currentZoom);
             
-            // Limit range to 0-999 (1 million total)
+            // Constrain to 0-999
             currentX = Math.max(0, Math.min(999, currentX));
             currentY = Math.max(0, Math.min(999, currentY));
 
@@ -208,22 +194,15 @@
             document.getElementById('purchaseOverlay').style.display = 'flex';
         }
 
-        function closeModal() { 
-            document.getElementById('purchaseOverlay').style.display = 'none'; 
-            hideError(); 
-        }
+        function closeModal() { document.getElementById('purchaseOverlay').style.display = 'none'; hideError(); }
 
         async function submitPurchase() {
             const color = document.getElementById('pixelColor').value;
             const link = document.getElementById('linkUrl').value;
-            
-            if(!link.startsWith('https://')) { 
-                document.getElementById('error-msg').style.display = 'block'; 
-                return; 
-            }
+            if(!link.startsWith('https://')) { document.getElementById('error-msg').style.display = 'block'; return; }
             
             const btn = document.getElementById('buyBtn');
-            btn.innerText = "Redirecting...";
+            btn.innerText = "Redirecting to Stripe...";
             btn.disabled = true;
 
             try {
@@ -234,21 +213,15 @@
                 });
                 const session = await res.json();
                 if(session.url) window.location.href = session.url;
-            } catch (e) { 
-                btn.innerText = "Error - Try Again"; 
-                btn.disabled = false; 
-            }
+            } catch (e) { btn.innerText = "Error - Try Again"; btn.disabled = false; }
         }
 
         function renderPixel(p) {
             const pix = document.createElement('a');
-            pix.href = p.link; 
-            pix.target = "_blank"; 
-            pix.className = 'pixel-link';
-            pix.style.left = p.x + 'px'; 
-            pix.style.top = p.y + 'px';
+            pix.href = p.link; pix.target = "_blank"; pix.className = 'pixel-link';
+            pix.style.left = p.x + 'px'; pix.style.top = p.y + 'px';
             pix.style.backgroundColor = p.color;
-            pix.title = `Location: ${p.x},${p.y} | Link: ${p.link}`;
+            pix.title = `Pixel ${p.x},${p.y}`;
             grid.appendChild(pix);
         }
 
@@ -258,11 +231,9 @@
                 const pixels = await res.json();
                 if(Array.isArray(pixels)) {
                     pixels.forEach(renderPixel);
-                    document.getElementById('stats').innerText = `Sold: ${pixels.length.toLocaleString()} / 1,000,000 Pixels`;
+                    document.getElementById('stats').innerText = `SOLD: ${pixels.length.toLocaleString()} / 1,000,000 PIXELS`;
                 }
-            } catch (err) { 
-                document.getElementById('stats').innerText = `Sold: 0 / 1,000,000 Pixels`; 
-            }
+            } catch (err) { document.getElementById('stats').innerText = `SOLD: 0 / 1,000,000 PIXELS`; }
         }
         loadPixels();
     </script>
