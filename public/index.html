@@ -15,18 +15,17 @@
         h1 { color: #cc0000; font-size: 32px; margin: 0; }
         .stats { font-weight: bold; margin-bottom: 15px; }
 
-        /* The Triple Column Layout */
         .page-wrapper {
             display: flex;
             justify-content: center;
             align-items: flex-start;
             gap: 20px;
-            max-width: 1400px;
+            max-width: 1450px;
             margin: 0 auto;
         }
 
         .ad-column {
-            width: 160px; /* Standard Skyscraper Width */
+            width: 160px;
             min-width: 160px;
             height: 600px;
             background: #e0e0e0;
@@ -38,26 +37,41 @@
             top: 20px;
         }
 
+        /* FIXED: Exact 1000x1000 container */
         #main-grid {
-            width: 1000px; height: 1000px; background-color: white; border: 2px solid #999;
-            position: relative; cursor: crosshair;
-            background-image: linear-gradient(to right, #eee 1px, transparent 1px), linear-gradient(to bottom, #eee 1px, transparent 1px);
+            width: 1000px; 
+            height: 1000px; 
+            background-color: white; 
+            border: 1px solid #000;
+            position: relative; 
+            cursor: crosshair;
+            /* Grid lines every 10px to avoid visual clutter */
+            background-image: linear-gradient(to right, #f0f0f0 1px, transparent 1px), linear-gradient(to bottom, #f0f0f0 1px, transparent 1px);
             background-size: 10px 10px;
             flex-shrink: 0;
+            overflow: hidden;
         }
 
-        /* Modal & UI Elements */
-        .pixel { position: absolute; width: 1px; height: 1px; }
+        .pixel { 
+            position: absolute; 
+            width: 1px; 
+            height: 1px; 
+            display: block;
+        }
+
         .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 100; }
         .modal { background: white; padding: 25px; border-radius: 8px; width: 320px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        
         input { width: 100%; margin: 8px 0; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
         .color-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
         #colorPreview { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #ddd; background-color: #ff0000; }
-        #error-msg { color: #cc0000; font-size: 12px; margin: 0; display: none; font-weight: bold; }
-        button { background: #008000; color: white; padding: 12px; width: 100%; border: none; cursor: pointer; font-weight: bold; border-radius: 4px; font-size: 16px; }
         
-        /* Hide ads on small screens to keep grid clickable */
-        @media (max-width: 1300px) {
+        #error-msg { color: #cc0000; font-size: 12px; margin: 0; display: none; font-weight: bold; }
+        
+        button { background: #008000; color: white; padding: 12px; width: 100%; border: none; cursor: pointer; font-weight: bold; border-radius: 4px; font-size: 16px; }
+        button:disabled { background: #888; }
+
+        @media (max-width: 1350px) {
             .ad-column { display: none; }
         }
     </style>
@@ -66,50 +80,40 @@
 
     <div class="header-section">
         <h1>The Million Pixels</h1>
-        <div id="stats" class="stats">Loading pixels...</div>
+        <div id="stats" class="stats">Loading Grid...</div>
     </div>
 
     <div class="page-wrapper">
         <div class="ad-column">
-            <ins class="adsbygoogle"
-                 style="display:block"
-                 data-ad-client="ca-pub-4335653991954613"
-                 data-ad-slot="YOUR_LEFT_AD_SLOT_ID"
-                 data-ad-format="auto"
-                 data-full-width-responsive="true"></ins>
+            <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-4335653991954613" data-ad-slot="YOUR_LEFT_SLOT" data-ad-format="auto"></ins>
             <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
         </div>
 
         <div id="main-grid" onclick="openPurchaseModal(event)"></div>
 
         <div class="ad-column">
-            <ins class="adsbygoogle"
-                 style="display:block"
-                 data-ad-client="ca-pub-4335653991954613"
-                 data-ad-slot="YOUR_RIGHT_AD_SLOT_ID"
-                 data-ad-format="auto"
-                 data-full-width-responsive="true"></ins>
+            <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-4335653991954613" data-ad-slot="YOUR_RIGHT_SLOT" data-ad-format="auto"></ins>
             <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
         </div>
     </div>
 
     <div class="overlay" id="purchaseOverlay">
         <div class="modal">
-            <h3>Buy This Pixel ($1.00)</h3>
+            <h3>Buy Pixel ($1.00)</h3>
             <p id="coords-display" style="font-size: 14px; color: #666;">Coordinates: (0,0)</p>
             
-            <label style="font-size: 12px; font-weight: bold;">Step 1: Pick Color</label>
+            <label style="font-size: 12px; font-weight: bold;">1. Color</label>
             <div class="color-row">
                 <input type="color" id="pixelColor" value="#ff0000" oninput="updatePreview(this.value)">
                 <div id="colorPreview"></div>
             </div>
 
-            <label style="font-size: 12px; font-weight: bold;">Step 2: Destination Link</label>
-            <input type="text" id="linkUrl" placeholder="https://your-website.com" oninput="hideError()">
-            <p id="error-msg">Invalid website. Must start with https://</p>
+            <label style="font-size: 12px; font-weight: bold;">2. Link</label>
+            <input type="text" id="linkUrl" placeholder="https://..." oninput="hideError()">
+            <p id="error-msg">Please enter a valid URL (https://)</p>
             
-            <button id="buyBtn" onclick="submitPurchase()">Purchase Pixel</button>
-            <button onclick="closeModal()" style="background:#f0f0f0; color: #333; margin-top:10px; font-size: 14px; width: 100%; border: none; padding: 10px; cursor: pointer;">Cancel</button>
+            <button id="buyBtn" onclick="submitPurchase()">Buy Now</button>
+            <button onclick="closeModal()" style="background:none; color: #666; margin-top:10px; border:none; text-decoration:underline; cursor:pointer;">Cancel</button>
         </div>
     </div>
 
@@ -122,9 +126,15 @@
         
         function openPurchaseModal(e) {
             const rect = grid.getBoundingClientRect();
+            // Math.floor ensures we stay within the 0-999 integer range
             currentX = Math.floor(e.clientX - rect.left);
             currentY = Math.floor(e.clientY - rect.top);
-            document.getElementById('coords-display').innerText = `Coordinates: (${currentX}, ${currentY})`;
+            
+            // Safety clamp
+            if(currentX < 0) currentX = 0; if(currentX > 999) currentX = 999;
+            if(currentY < 0) currentY = 0; if(currentY > 999) currentY = 999;
+
+            document.getElementById('coords-display').innerText = `Location: ${currentX}, ${currentY}`;
             document.getElementById('purchaseOverlay').style.display = 'flex';
         }
 
@@ -136,8 +146,7 @@
             if(!link.startsWith('http')) { document.getElementById('error-msg').style.display = 'block'; return; }
             
             const btn = document.getElementById('buyBtn');
-            btn.innerText = "Connecting to Stripe...";
-            btn.disabled = true;
+            btn.innerText = "Redirecting..."; btn.disabled = true;
 
             try {
                 const res = await fetch('/create-checkout-session', {
@@ -151,12 +160,13 @@
         }
 
         function renderPixel(p) {
-            const div = document.createElement('a');
-            div.href = p.link; div.target = "_blank"; div.className = 'pixel';
-            div.style.left = p.x + 'px'; div.style.top = p.y + 'px';
-            div.style.backgroundColor = p.color;
-            div.title = `Pixel at ${p.x},${p.y}`;
-            grid.appendChild(div);
+            const pix = document.createElement('a');
+            pix.href = p.link; pix.target = "_blank"; pix.className = 'pixel';
+            pix.style.left = p.x + 'px'; 
+            pix.style.top = p.y + 'px';
+            pix.style.backgroundColor = p.color;
+            pix.title = `Pixel at ${p.x},${p.y}`;
+            grid.appendChild(pix);
         }
 
         async function loadPixels() {
@@ -165,9 +175,11 @@
                 const pixels = await res.json();
                 if(Array.isArray(pixels)) {
                     pixels.forEach(renderPixel);
-                    document.getElementById('stats').innerText = `Sold: ${pixels.length}/1,000,000 pixels | $${pixels.length} Raised`;
+                    document.getElementById('stats').innerText = `Sold: ${pixels.length.toLocaleString()}/1,000,000 pixels`;
                 }
-            } catch (err) { document.getElementById('stats').innerText = `Sold: 0/1,000,000 pixels | $0 Raised`; }
+            } catch (err) { 
+                document.getElementById('stats').innerText = `Sold: 0/1,000,000 pixels`; 
+            }
         }
         loadPixels();
     </script>
