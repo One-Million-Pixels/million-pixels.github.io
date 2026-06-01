@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Million Dollar Grid</title>
+    <title>Million Pixels</title>
     <style>
         body { background-color: #f0f0f0; font-family: "Courier New", Courier, monospace; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         h1 { color: #cc0000; font-size: 32px; margin-bottom: 5px; }
         .stats { margin-bottom: 20px; font-weight: bold; }
         
-        /* The 1000x1000 main container */
         #main-grid {
             width: 1000px;
             height: 1000px;
@@ -17,43 +16,48 @@
             border: 2px solid #999;
             position: relative;
             cursor: crosshair;
+            /* Visual lines every 1px are too messy, so we show them every 10px */
             background-image: 
                 linear-gradient(to right, #eee 1px, transparent 1px),
                 linear-gradient(to bottom, #eee 1px, transparent 1px);
-            background-size: 10px 10px; /* Visual grid lines every 10px */
+            background-size: 10px 10px;
         }
 
-        .ad-block {
+        .pixel {
             position: absolute;
-            border: none;
-            background-size: cover;
+            width: 1px;
+            height: 1px;
         }
 
-        /* Purchase Modal */
         .overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 100;
         }
         .modal { background: white; padding: 20px; border-radius: 5px; width: 300px; }
         input { width: 100%; margin: 10px 0; padding: 8px; box-sizing: border-box; }
+        label { font-size: 12px; font-weight: bold; }
         button { background: #008000; color: white; padding: 10px; width: 100%; border: none; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <h1>The 2026 Million Dollar Grid</h1>
-    <div class="stats">Sold: 0/1,000,000 pixels | $0 Raised</div>
+    <h1>The Million Pixels</h1>
+    <div id="stats" class="stats">Loading pixels...</div>
 
-    <div id="main-grid" onclick="openPurchaseModal(event)">
-        </div>
+    <div id="main-grid" onclick="openPurchaseModal(event)"></div>
 
     <div class="overlay" id="purchaseOverlay">
         <div class="modal">
-            <h3>Buy a 10x10 Block ($100)</h3>
+            <h3>Buy 1 Pixel ($1.00)</h3>
             <p id="coords-display">Coordinates: (0,0)</p>
-            <input type="text" id="imgUrl" placeholder="Image URL (10x10px)">
-            <input type="text" id="linkUrl" placeholder="Destination URL (https://...)">
-            <button onclick="submitPurchase()">Buy Block</button>
+            
+            <label>Pick Pixel Color:</label>
+            <input type="color" id="pixelColor" value="#ff0000">
+            
+            <label>Link Website:</label>
+            <input type="text" id="linkUrl" placeholder="https://yourwebsite.com">
+            
+            <button id="buyBtn" onclick="submitPurchase()">Buy Pixel</button>
             <button onclick="closeModal()" style="background:#888; margin-top:5px;">Cancel</button>
         </div>
     </div>
@@ -63,10 +67,10 @@
         let currentY = 0;
 
         function openPurchaseModal(e) {
-            // Snap to 10px grid
-            const rect = e.target.getBoundingClientRect();
-            currentX = Math.floor((e.clientX - rect.left) / 10) * 10;
-            currentY = Math.floor((e.clientY - rect.top) / 10) * 10;
+            const rect = document.getElementById('main-grid').getBoundingClientRect();
+            // Individual pixel selection (1x1)
+            currentX = Math.floor(e.clientX - rect.left);
+            currentY = Math.floor(e.clientY - rect.top);
 
             document.getElementById('coords-display').innerText = `Coordinates: (${currentX}, ${currentY})`;
             document.getElementById('purchaseOverlay').style.display = 'flex';
@@ -77,44 +81,49 @@
         }
 
         async function submitPurchase() {
-            const img = document.getElementById('imgUrl').value;
+            const color = document.getElementById('pixelColor').value;
             const link = document.getElementById('linkUrl').value;
+            const btn = document.getElementById('buyBtn');
 
-            if(!img || !link) return alert("Fill in all fields!");
+            if(!link.startsWith('http')) return alert("Please enter a valid URL starting with http:// or https://");
 
-            const payload = { x: currentX, y: currentY, img, link };
+            btn.innerText = "Redirecting...";
+            btn.disabled = true;
 
-            const response = await fetch('/api/purchase', {
+            // This calls your Render server
+            const response = await fetch('/create-checkout-session', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(payload)
+                body: JSON.stringify({ x: currentX, y: currentY, color, link })
             });
 
-            if(response.ok) {
-                renderBlock(payload);
-                closeModal();
+            const session = await response.json();
+            if(session.url) {
+                window.location.href = session.url; // Go to Stripe
+            } else {
+                alert("Error connecting to Stripe.");
+                btn.innerText = "Buy Pixel";
+                btn.disabled = false;
             }
         }
 
-        function renderBlock(data) {
-            const block = document.createElement('a');
-            block.href = data.link;
-            block.target = "_blank";
-            block.className = 'ad-block';
-            block.style.left = data.x + 'px';
-            block.style.top = data.y + 'px';
-            block.style.width = '10px';
-            block.style.height = '10px';
-            block.style.backgroundImage = `url(${data.img})`;
-            block.title = data.link;
-            document.getElementById('main-grid').appendChild(block);
+        function renderPixel(data) {
+            const pix = document.createElement('a');
+            pix.href = data.link;
+            pix.target = "_blank";
+            pix.className = 'pixel';
+            pix.style.left = data.x + 'px';
+            pix.style.top = data.y + 'px';
+            pix.style.backgroundColor = data.color;
+            pix.title = `Pixel (${data.x},${data.y}) - ${data.link}`;
+            document.getElementById('main-grid').appendChild(pix);
         }
 
-        // Fetch existing pixels on load
         window.onload = async () => {
             const res = await fetch('/api/pixels');
             const pixels = await res.json();
-            pixels.forEach(renderBlock);
+            pixels.forEach(renderPixel);
+            document.getElementById('stats').innerText = `Sold: ${pixels.length}/1,000,000 pixels | $${pixels.length} Raised`;
         };
     </script>
 </body>
