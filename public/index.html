@@ -3,189 +3,191 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Million Pixel Homepage</title>
+    <title>The Million Dollar Homepage</title>
     
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4335653991954613" crossorigin="anonymous"></script>
 
     <style>
-        body { background-color: #f4f4f4; font-family: 'Courier New', Courier, monospace; margin: 0; padding: 0; }
-        
-        .header { background: #fff; padding: 15px; border-bottom: 2px solid #000; text-align: center; }
-        h1 { margin: 0; font-size: 28px; color: #cc0000; font-weight: 900; }
-        .stats { font-weight: bold; font-size: 18px; margin-top: 5px; }
+        /* 1. Reset everything to match the 2005 aesthetic */
+        body { 
+            background-color: #fff; 
+            font-family: Verdana, Arial, Helvetica, sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            text-align: center; 
+        }
 
-        .toolbar { background: #222; color: #fff; padding: 12px; display: flex; justify-content: center; align-items: center; gap: 20px; position: sticky; top: 0; z-index: 100; }
-        #zoomSlider { width: 300px; cursor: pointer; }
+        /* 2. Header Area */
+        .header { 
+            width: 1000px; 
+            margin: 0 auto; 
+            text-align: left; 
+            padding: 10px 0;
+        }
+        h1 { font-size: 24px; margin: 0; color: #000; }
+        .stats-text { font-size: 14px; font-weight: bold; color: #cc0000; }
 
-        .main-container { display: flex; justify-content: center; padding: 20px; gap: 20px; }
-        .ad-skyscraper { width: 160px; height: 600px; background: #ddd; border: 1px solid #999; flex-shrink: 0; }
-
-        /* THE VIEWPORT */
-        .viewport {
+        /* 3. The Grid Container - No Sidebars */
+        .main-area {
             width: 1000px;
-            height: 700px;
-            overflow: auto;
-            border: 4px solid #000;
-            background: #fff;
+            margin: 0 auto;
             position: relative;
         }
 
-        /* THE MILLION PIXEL GRID */
-        #grid {
-            width: 1000px;  /* 1000 pixels wide */
-            height: 1000px; /* 1000 pixels high = 1,000,000 TOTAL */
+        /* THE GRID: 1,000,000 INDIVIDUAL PIXELS */
+        #pixel-grid {
+            width: 1000px;  /* Exactly 1000 pixels */
+            height: 1000px; /* Exactly 1000 pixels */
+            border: 2px solid #000;
+            background-color: #fff;
             position: relative;
-            transform-origin: top left;
             cursor: crosshair;
-
-            /* VISUAL FIX: This draws 1,000,000 tiny squares immediately */
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"><rect width="1" height="1" fill="none" stroke="rgba(0,0,0,0.1)" stroke-width="0.1"/></svg>');
-            background-size: 1px 1px; /* Each square is exactly 1 pixel */
             
-            image-rendering: pixelated;
+            /* Visual 10x10 grid lines just like the original site */
+            background-image: 
+                linear-gradient(#e5e5e5 1px, transparent 1px), 
+                linear-gradient(90deg, #e5e5e5 1px, transparent 1px);
+            background-size: 10px 10px;
         }
 
-        /* Hover effect to see the individual pixel box */
-        #grid:hover::after {
-            content: "";
+        /* Individual Sold Pixels - 1px by 1px */
+        .pixel-entry {
             position: absolute;
             width: 1px;
             height: 1px;
-            outline: 2px solid red;
-            pointer-events: none;
-            z-index: 20;
+            z-index: 5;
         }
 
-        .pixel-link { position: absolute; width: 1px; height: 1px; z-index: 10; }
-
-        /* Modal */
-        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; z-index: 9999; }
-        .modal { background: white; padding: 30px; width: 340px; border: 5px solid #000; }
-        .coord-display { background: #000; color: #fff; padding: 10px; font-weight: bold; text-align: center; margin-bottom: 20px; font-size: 20px; }
+        /* 4. Purchase Popup */
+        .modal-overlay { 
+            display: none; 
+            position: fixed; 
+            top: 0; left: 0; 
+            width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.7); 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 1000; 
+        }
+        .buy-modal { 
+            background: #fff; 
+            padding: 20px; 
+            border: 2px solid #000; 
+            width: 300px; 
+            text-align: left; 
+        }
+        .coord-pill { 
+            background: #ffff00; 
+            font-weight: bold; 
+            padding: 5px; 
+            display: block; 
+            margin-bottom: 15px; 
+            border: 1px solid #000;
+        }
         
-        .preview-group { display: flex; align-items: center; gap: 15px; margin: 15px 0; }
-        #colorPreview { width: 45px; height: 45px; border-radius: 50%; border: 2px solid #000; background: #ff0000; }
-        
-        input[type="text"] { width: 100%; padding: 12px; border: 2px solid #000; box-sizing: border-box; font-size: 16px; }
-        .buy-btn { background: #00cc00; color: #fff; border: 3px solid #000; width: 100%; padding: 18px; font-weight: bold; font-size: 22px; cursor: pointer; margin-top: 20px; }
-        .buy-btn:hover { background: #00ff00; color: #000; }
+        input[type="text"] { width: 100%; padding: 8px; margin: 10px 0; border: 1px solid #ccc; }
+        .confirm-btn { background: #ff0000; color: #fff; border: none; padding: 10px; width: 100%; font-weight: bold; cursor: pointer; font-size: 16px; }
+        .confirm-btn:hover { background: #cc0000; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>THE MILLION PIXEL HOMEPAGE</h1>
-        <div id="stats" class="stats">SOLD: 0 / 1,000,000 PIXELS</div>
+        <h1>The Million Dollar Homepage</h1>
+        <div id="pixel-stats" class="stats-text">Sold: 0 / 1,000,000 pixels</div>
     </div>
 
-    <div class="toolbar">
-        <label>🔍 ZOOM IN TO SEE INDIVIDUAL PIXELS:</label>
-        <input type="range" id="zoomSlider" min="1" max="100" value="1" oninput="applyZoom(this.value)">
-        <span id="zoomLabel" style="width: 50px; font-weight: bold;">1x</span>
+    <div class="main-area">
+        <div id="pixel-grid" onclick="pixelClicked(event)"></div>
     </div>
 
-    <div class="main-container">
-        <div class="ad-skyscraper">
-            <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-4335653991954613" data-ad-slot="YOUR_LEFT_SLOT" data-ad-format="auto"></ins>
-            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-        </div>
-
-        <div class="viewport">
-            <div id="grid" onclick="openPurchase(event)"></div>
-        </div>
-
-        <div class="ad-skyscraper">
-            <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-4335653991954613" data-ad-slot="YOUR_RIGHT_SLOT" data-ad-format="auto"></ins>
-            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-        </div>
-    </div>
-
-    <div class="overlay" id="purchaseModal">
-        <div class="modal">
-            <h2 style="margin:0 0 10px 0">BUY THIS PIXEL</h2>
-            <div id="coords" class="coord-display">X: 0, Y: 0</div>
+    <div class="modal-overlay" id="overlay">
+        <div class="buy-modal">
+            <h3 style="margin-top:0">Buy This Pixel</h3>
+            <div id="coord-display" class="coord-pill">X:0, Y:0</div>
             
-            <label style="font-weight:bold; font-size: 12px;">1. CHOOSE YOUR COLOR</label>
-            <div class="preview-group">
-                <input type="color" id="pixelColor" value="#ff0000" oninput="updateCircle(this.value)" style="width:70px; height:50px; cursor:pointer;">
-                <div id="colorPreview"></div>
-            </div>
-
-            <label style="font-weight:bold; font-size: 12px;">2. WEBSITE LINK (HTTPS)</label>
-            <input type="text" id="pixelUrl" placeholder="https://www.yoursite.com">
+            <label>Pixel Color:</label>
+            <input type="color" id="pColor" value="#ff0000" style="width: 100%; height: 40px; border: 1px solid #000; margin: 5px 0 15px 0;">
             
-            <button class="buy-btn" id="checkoutBtn" onclick="startStripe()">CHECKOUT ($1.00)</button>
-            <p onclick="closePurchase()" style="text-align:center; text-decoration:underline; cursor:pointer; margin-top:15px; color:#666;">Cancel</p>
+            <label>Your Link (HTTPS):</label>
+            <input type="text" id="pLink" placeholder="https://example.com">
+            
+            <button class="confirm-btn" onclick="goToCheckout()">Buy for $1.00</button>
+            <p onclick="closeModal()" style="text-align:center; text-decoration:underline; cursor:pointer; font-size: 12px; margin-top:10px;">Cancel</p>
         </div>
     </div>
 
     <script>
-        let currentX = 0, currentY = 0, currentZoom = 1;
-        const grid = document.getElementById('grid');
+        let selX = 0;
+        let selY = 0;
+        const grid = document.getElementById('pixel-grid');
 
-        function applyZoom(v) {
-            currentZoom = v;
-            grid.style.transform = `scale(${v})`;
-            document.getElementById('zoomLabel').innerText = v + 'x';
-        }
-
-        function updateCircle(c) { document.getElementById('colorPreview').style.background = c; }
-
-        function openPurchase(e) {
+        // Handles the 1,000,000 pixel selection
+        function pixelClicked(e) {
             const rect = grid.getBoundingClientRect();
-            // This math finds the EXACT pixel in a 1,000,000 coordinate map
-            currentX = Math.floor((e.clientX - rect.left) / currentZoom);
-            currentY = Math.floor((e.clientY - rect.top) / currentZoom);
+            // This captures the EXACT pixel from 0 to 999
+            selX = Math.floor(e.clientX - rect.left);
+            selY = Math.floor(e.clientY - rect.top);
 
-            // Bounds check (0-999)
-            currentX = Math.max(0, Math.min(999, currentX));
-            currentY = Math.max(0, Math.min(999, currentY));
+            // Constraint check
+            if(selX < 0) selX = 0; if(selX > 999) selX = 999;
+            if(selY < 0) selY = 0; if(selY > 999) selY = 999;
 
-            document.getElementById('coords').innerText = `X: ${currentX}, Y: ${currentY}`;
-            document.getElementById('purchaseModal').style.display = 'flex';
+            document.getElementById('coord-display').innerText = `Location: X=${selX}, Y=${selY}`;
+            document.getElementById('overlay').style.display = 'flex';
         }
 
-        function closePurchase() { document.getElementById('purchaseModal').style.display = 'none'; }
+        function closeModal() {
+            document.getElementById('overlay').style.display = 'none';
+        }
 
-        async function startStripe() {
-            const color = document.getElementById('pixelColor').value;
-            const link = document.getElementById('pixelUrl').value;
-            if (!link.startsWith('https://')) { alert("Use https://"); return; }
+        async function goToCheckout() {
+            const color = document.getElementById('pColor').value;
+            const link = document.getElementById('pLink').value;
 
-            const btn = document.getElementById('checkoutBtn');
-            btn.innerText = "OPENING STRIPE...";
-            btn.disabled = true;
+            if(!link.startsWith('https://')) {
+                alert("Please use a secure https:// link.");
+                return;
+            }
 
             try {
-                const res = await fetch('/create-checkout-session', {
+                const response = await fetch('/create-checkout-session', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ x: currentX, y: currentY, color, link })
+                    body: JSON.stringify({ x: selX, y: selY, color: color, link: link })
                 });
-                const d = await res.json();
-                if (d.url) window.location.href = d.url;
-            } catch (err) { btn.disabled = false; btn.innerText = "CHECKOUT ($1.00)"; }
+                const session = await response.json();
+                if (session.url) window.location.href = session.url;
+            } catch (err) {
+                console.error("Payment Error");
+            }
         }
 
-        function addPixel(p) {
+        // Draws sold pixels onto the grid
+        function renderPixel(p) {
             const a = document.createElement('a');
-            a.href = p.link; a.target = "_blank"; a.className = 'pixel-link';
-            a.style.left = p.x + 'px'; a.style.top = p.y + 'px';
+            a.href = p.link;
+            a.target = "_blank";
+            a.className = 'pixel-entry';
+            a.style.left = p.x + 'px';
+            a.style.top = p.y + 'px';
             a.style.backgroundColor = p.color;
+            a.title = p.link;
             grid.appendChild(a);
         }
 
-        async function load() {
+        async function loadPixels() {
             try {
                 const res = await fetch('/api/pixels');
                 const data = await res.json();
                 if (Array.isArray(data)) {
-                    data.forEach(addPixel);
-                    document.getElementById('stats').innerText = `SOLD: ${data.length.toLocaleString()} / 1,000,000 PIXELS`;
+                    data.forEach(renderPixel);
+                    document.getElementById('pixel-stats').innerText = `Sold: ${data.length.toLocaleString()} / 1,000,000 pixels`;
                 }
             } catch (e) {}
         }
-        load();
+
+        loadPixels();
     </script>
 </body>
 </html>
