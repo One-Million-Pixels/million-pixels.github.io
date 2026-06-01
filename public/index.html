@@ -3,150 +3,241 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Million Dollar Homepage - Zoom Edition</title>
+    <title>The Million Dollar Homepage</title>
     <style>
-        body { background-color: #f0f0f0; font-family: Verdana, Arial, sans-serif; margin: 0; padding: 0; text-align: center; }
+        /* --- Restoration of the 2005 Aesthetic --- */
+        body { background-color: #fff; font-family: Verdana, Arial, Helvetica, sans-serif; margin: 0; padding: 0; }
         
-        /* Floating Toolbar for Stats and Zoom */
-        .toolbar { 
-            position: sticky; top: 0; background: #fff; border-bottom: 2px solid #000; 
-            padding: 10px; z-index: 100; display: flex; justify-content: center; gap: 20px; align-items: center;
+        .container { width: 1200px; margin: 0 auto; text-align: center; }
+        
+        /* Top Header Area */
+        .header-main { padding: 20px 0; border-bottom: 1px solid #ccc; margin-bottom: 10px; }
+        .header-main h1 { font-size: 32px; margin: 0; letter-spacing: -1px; }
+        
+        /* Stats Bar & Zoom Bar combined */
+        .top-nav { 
+            background: #f4f4f4; border: 1px solid #000; padding: 10px; 
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 10px; font-weight: bold; font-size: 13px;
         }
 
-        .header { width: 1000px; margin: 0 auto; text-align: left; padding: 10px 0; }
-        h1 { font-size: 20px; margin: 0; color: #000; display: inline-block; }
+        /* Layout Grid */
+        .layout-wrapper { display: flex; gap: 15px; align-items: flex-start; }
 
-        /* Zoom Control Styling */
-        .zoom-controls { background: #eee; padding: 5px 15px; border-radius: 5px; border: 1px solid #ccc; }
-        
-        /* Real-time Info Bar */
-        #hover-info { font-weight: bold; color: #000; font-size: 14px; min-width: 300px; text-align: left; }
+        /* Left Sidebar Stats */
+        .sidebar { width: 180px; text-align: left; border: 1px solid #000; padding: 10px; background: #fffde0; }
+        .sidebar h3 { font-size: 14px; margin-top: 0; border-bottom: 1px solid #000; padding-bottom: 5px; }
+        .stat-box { margin-bottom: 15px; }
+        .stat-label { font-size: 11px; color: #555; display: block; }
+        .stat-value { font-size: 18px; color: #cc0000; font-weight: bold; }
 
-        .main-area { 
-            width: 1000px; margin: 20px auto; position: relative; 
-            overflow: auto; border: 5px solid #333; height: 80vh; background: #fff;
+        /* The Grid Display */
+        .grid-viewport { 
+            width: 1000px; height: 1000px; overflow: auto; 
+            border: 2px solid #000; background: #fff; position: relative;
         }
 
         #pixel-grid {
             width: 1000px; height: 1000px; position: relative; cursor: crosshair;
             background-image: linear-gradient(#e5e5e5 1px, transparent 1px), linear-gradient(90deg, #e5e5e5 1px, transparent 1px);
             background-size: 10px 10px;
-            transform-origin: 0 0; /* Critical for zooming from top-left */
-            transition: transform 0.1s ease-out;
+            transform-origin: 0 0;
         }
 
         .pixel-entry { position: absolute; width: 1px; height: 1px; z-index: 5; }
 
-        /* Modal Styling */
+        /* --- Improved Purchase Modal --- */
         .modal-overlay { 
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 1000; 
+            background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 1000; 
         }
-        .buy-modal { background: #fff; padding: 20px; border: 2px solid #000; width: 300px; text-align: left; }
-        .coord-pill { background: #ffff00; font-weight: bold; padding: 5px; display: block; margin-bottom: 15px; border: 1px solid #000; font-size: 12px; }
+        .buy-modal { 
+            background: #fff; border: 3px solid #cc0000; width: 400px; 
+            text-align: left; box-shadow: 10px 10px 0px rgba(0,0,0,0.2);
+        }
+        .modal-header { background: #cc0000; color: #fff; padding: 10px; font-weight: bold; }
+        .modal-body { padding: 20px; }
         
-        input[type="text"] { width: 92%; padding: 8px; margin: 10px 0; border: 1px solid #ccc; }
-        .confirm-btn { background: #ff0000; color: #fff; border: none; padding: 10px; width: 100%; font-weight: bold; cursor: pointer; font-size: 16px; }
+        .field-group { margin-bottom: 15px; }
+        .field-group label { display: block; font-weight: bold; font-size: 12px; margin-bottom: 5px; }
+        
+        .coord-display-large { 
+            font-family: monospace; background: #000; color: #00ff00; 
+            padding: 10px; text-align: center; font-size: 16px; margin-bottom: 20px;
+        }
+
+        input[type="text"], input[type="url"] { 
+            width: 94%; padding: 8px; border: 1px solid #999; font-family: Verdana;
+        }
+
+        .checkout-btn { 
+            background: #4CAF50; color: white; border: none; padding: 15px; 
+            width: 100%; font-size: 18px; font-weight: bold; cursor: pointer;
+            border-bottom: 4px solid #2E7D32;
+        }
+        .checkout-btn:active { border-bottom: none; transform: translateY(2px); }
+        .cancel-link { display: block; text-align: center; margin-top: 15px; color: #666; font-size: 11px; cursor: pointer; }
+
     </style>
 </head>
 <body>
 
-    <div class="toolbar">
+<div class="container">
+    <div class="header-main">
         <h1>The Million Dollar Homepage</h1>
-        <div id="hover-info">Hover over the grid...</div>
-        <div class="zoom-controls">
-            <label>Zoom:</label>
-            <input type="range" id="zoomBar" min="1" max="10" step="0.5" value="1">
+        <span>1,000,000 pixels &bull; $1 per pixel &bull; Own a piece of internet history!</span>
+    </div>
+
+    <div class="top-nav">
+        <div id="hover-tracker">X: 0, Y: 0 | Pixel #0</div>
+        <div>
+            Zoom: <input type="range" id="zoomBar" min="1" max="10" step="0.5" value="1">
             <span id="zoomVal">1x</span>
         </div>
     </div>
 
-    <div class="main-area" id="scroll-container">
-        <div id="pixel-grid" onmousemove="updateHoverInfo(event)" onclick="pixelClicked(event)"></div>
-    </div>
+    <div class="layout-wrapper">
+        <div class="sidebar">
+            <h3>PIXEL STATS</h3>
+            <div class="stat-box">
+                <span class="stat-label">Sold:</span>
+                <span id="stat-sold" class="stat-value">0</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-label">In Stock:</span>
+                <span id="stat-stock" class="stat-value">1,000,000</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-label">Total Earned:</span>
+                <span id="stat-cash" class="stat-value" style="color: green;">$0</span>
+            </div>
+            <hr>
+            <p style="font-size: 10px; line-height: 1.4;">Click any empty space on the grid to purchase your pixel!</p>
+        </div>
 
-    <div class="modal-overlay" id="overlay">
-        <div class="buy-modal">
-            <h3 style="margin-top:0">Buy This Pixel</h3>
-            <div id="coord-display" class="coord-pill">X:0, Y:0 (Pixel #0)</div>
-            <label>Color:</label>
-            <input type="color" id="pColor" value="#ff0000" style="width: 100%; height: 30px;">
-            <label>Link:</label>
-            <input type="text" id="pLink" placeholder="https://example.com">
-            <button class="confirm-btn" onclick="submitPurchase()">Purchase</button>
-            <p onclick="closeModal()" style="text-align:center; text-decoration:underline; cursor:pointer; font-size: 12px;">Cancel</p>
+        <div class="grid-viewport">
+            <div id="pixel-grid" onmousemove="handleHover(event)" onclick="handleGridClick(event)"></div>
         </div>
     </div>
+</div>
 
-    <script>
-        let selX = 0, selY = 0;
-        const grid = document.getElementById('pixel-grid');
-        const zoomBar = document.getElementById('zoomBar');
-        const zoomVal = document.getElementById('zoomVal');
-        const hoverInfo = document.getElementById('hover-info');
-
-        // --- ZOOM LOGIC ---
-        zoomBar.oninput = function() {
-            const scale = this.value;
-            grid.style.transform = `scale(${scale})`;
-            zoomVal.innerText = scale + 'x';
-        };
-
-        // --- HOVER LOGIC ---
-        function updateHoverInfo(e) {
-            const rect = grid.getBoundingClientRect();
-            const scale = zoomBar.value;
+<div class="modal-overlay" id="overlay">
+    <div class="buy-modal">
+        <div class="modal-header">SECURE CHECKOUT</div>
+        <div class="modal-body">
+            <div id="coord-display" class="coord-display-large">X: 0 | Y: 0 | #0</div>
             
-            // We divide by scale because the visual mouse position 
-            // changes when the grid is zoomed in
-            const x = Math.floor((e.clientX - rect.left) / scale);
-            const y = Math.floor((e.clientY - rect.top) / scale);
+            <div class="field-group">
+                <label>1. Pick Your Color</label>
+                <input type="color" id="pColor" value="#ff0000" style="width: 100%; height: 40px; border: 1px solid #000;">
+            </div>
 
-            if (x >= 0 && x < 1000 && y >= 0 && y < 1000) {
-                const pixelNum = (y * 1000) + x + 1;
-                hoverInfo.innerHTML = `X: <span>${x}</span>, Y: <span>${y}</span> | <span style="color:#cc0000">Pixel #${pixelNum.toLocaleString()}</span>`;
-            }
+            <div class="field-group">
+                <label>2. Your Destination URL</label>
+                <input type="url" id="pLink" placeholder="https://www.yourwebsite.com">
+            </div>
+
+            <div class="field-group">
+                <label>3. Hover Tooltip Text</label>
+                <input type="text" id="pTitle" placeholder="My Awesome Business">
+            </div>
+
+            <button class="checkout-btn" onclick="processPurchase()">PURCHASE FOR $1.00</button>
+            <span class="cancel-link" onclick="closeModal()">[ Cancel and Return to Map ]</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    let selX = 0, selY = 0;
+    const grid = document.getElementById('pixel-grid');
+    const zoomBar = document.getElementById('zoomBar');
+    const hoverTracker = document.getElementById('hover-tracker');
+
+    // --- Stats Update ---
+    function updateStats(totalSold) {
+        document.getElementById('stat-sold').innerText = totalSold.toLocaleString();
+        document.getElementById('stat-stock').innerText = (1000000 - totalSold).toLocaleString();
+        document.getElementById('stat-cash').innerText = '$' + totalSold.toLocaleString();
+    }
+
+    // --- Zoom Management ---
+    zoomBar.oninput = function() {
+        const scale = this.value;
+        grid.style.transform = `scale(${scale})`;
+        document.getElementById('zoomVal').innerText = scale + 'x';
+    };
+
+    // --- Real-time Hover Logic ---
+    function handleHover(e) {
+        const rect = grid.getBoundingClientRect();
+        const scale = zoomBar.value;
+        const x = Math.floor((e.clientX - rect.left) / scale);
+        const y = Math.floor((e.clientY - rect.top) / scale);
+
+        if (x >= 0 && x < 1000 && y >= 0 && y < 1000) {
+            const pixelNum = (y * 1000) + x + 1;
+            hoverTracker.innerText = `X: ${x}, Y: ${y} | Pixel #${pixelNum.toLocaleString()}`;
         }
+    }
 
-        // --- PURCHASE LOGIC ---
-        function pixelClicked(e) {
-            const rect = grid.getBoundingClientRect();
-            const scale = zoomBar.value;
-            selX = Math.floor((e.clientX - rect.left) / scale);
-            selY = Math.floor((e.clientY - rect.top) / scale);
-            
-            const pixelNum = (selY * 1000) + selX + 1;
-            document.getElementById('coord-display').innerText = `Location: X=${selX}, Y=${selY} (Pixel #${pixelNum.toLocaleString()})`;
-            document.getElementById('overlay').style.display = 'flex';
+    // --- Click/Purchase Logic ---
+    function handleGridClick(e) {
+        const rect = grid.getBoundingClientRect();
+        const scale = zoomBar.value;
+        selX = Math.floor((e.clientX - rect.left) / scale);
+        selY = Math.floor((e.clientY - rect.top) / scale);
+        const pixelNum = (selY * 1000) + selX + 1;
+
+        document.getElementById('coord-display').innerText = `X: ${selX} | Y: ${selY} | #${pixelNum.toLocaleString()}`;
+        document.getElementById('overlay').style.display = 'flex';
+    }
+
+    function closeModal() { document.getElementById('overlay').style.display = 'none'; }
+
+    async function processPurchase() {
+        const color = document.getElementById('pColor').value;
+        const link = document.getElementById('pLink').value;
+        const title = document.getElementById('pTitle').value || link;
+
+        if(!link.startsWith('http')) return alert("Please enter a valid URL (including http/https)");
+
+        // Assuming Backend exists as per previous steps
+        const res = await fetch('/api/purchase', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ x: selX, y: selY, color, link, title })
+        });
+
+        if (res.ok) {
+            renderPixel({x: selX, y: selY, color, link, title});
+            closeModal();
+            // Refresh stats
+            loadPixels();
         }
+    }
 
-        function closeModal() { document.getElementById('overlay').style.display = 'none'; }
+    function renderPixel(p) {
+        const a = document.createElement('a');
+        a.href = p.link; a.target = "_blank"; a.className = 'pixel-entry';
+        a.style.left = p.x + 'px'; a.style.top = p.y + 'px';
+        a.style.backgroundColor = p.color;
+        a.title = p.title || p.link;
+        grid.appendChild(a);
+    }
 
-        async function submitPurchase() {
-            const color = document.getElementById('pColor').value;
-            const link = document.getElementById('pLink').value;
-            if(!link.startsWith('https://')) return alert("Use https://");
+    async function loadPixels() {
+        try {
+            const res = await fetch('/api/pixels');
+            const data = await res.json();
+            grid.innerHTML = ''; // Clear for re-render
+            data.forEach(renderPixel);
+            updateStats(data.length);
+        } catch(e) { console.log("Offline mode or Server not running."); }
+    }
 
-            // Assuming local backend from previous step
-            const res = await fetch('/api/purchase', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ x: selX, y: selY, color, link })
-            });
-            
-            if (res.ok) {
-                renderPixel({x: selX, y: selY, color, link});
-                closeModal();
-            }
-        }
+    loadPixels();
+</script>
 
-        function renderPixel(p) {
-            const a = document.createElement('a');
-            a.href = p.link; a.target = "_blank"; a.className = 'pixel-entry';
-            a.style.left = p.x + 'px'; a.style.top = p.y + 'px';
-            a.style.backgroundColor = p.color;
-            grid.appendChild(a);
-        }
-    </script>
 </body>
 </html>
