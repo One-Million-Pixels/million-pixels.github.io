@@ -26,23 +26,20 @@
 
         .layout-wrapper { display: flex; gap: 15px; align-items: flex-start; }
 
-        /* NEW: Left column wrapper to stack the stats box and the ad cleanly */
         .left-column {
             display: flex;
             flex-direction: column;
             gap: 15px;
-            width: 202px; /* Matches the sidebar width + its borders */
+            width: 202px;
             flex-shrink: 0;
         }
 
-        /* Left Sidebar (The yellow stats box) */
         .sidebar { width: 180px; text-align: left; border: 1px solid #000; padding: 10px; background: #fffde0; }
         .sidebar h3 { font-size: 14px; margin-top: 0; border-bottom: 1px solid #000; padding-bottom: 5px; }
         .stat-box { margin-bottom: 15px; }
         .stat-label { font-size: 11px; color: #555; display: block; }
         .stat-value { font-size: 18px; color: #cc0000; font-weight: bold; }
 
-        /* NEW: Clean container for the ad right below the box */
         .standalone-ad-box {
             width: 100%;
             text-align: center;
@@ -50,7 +47,6 @@
             padding-top: 5px;
         }
 
-        /* Grid Viewport */
         .grid-viewport { 
             width: 1000px; height: 1000px; overflow: auto; 
             border: 2px solid #000; background: #fff; position: relative;
@@ -65,7 +61,6 @@
 
         .pixel-entry { position: absolute; width: 1px; height: 1px; z-index: 5; }
 
-        /* Purchase Modal */
         .modal-overlay { 
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 1000; 
@@ -93,6 +88,13 @@
             border-bottom: 4px solid #2E7D32;
         }
         .cancel-link { display: block; text-align: center; margin-top: 15px; color: #666; font-size: 11px; cursor: pointer; }
+
+        #urlError {
+            color: red;
+            font-size: 12px;
+            margin-top: 4px;
+            min-height: 14px;
+        }
     </style>
 </head>
 <body>
@@ -112,9 +114,7 @@
     </div>
 
     <div class="layout-wrapper">
-        
         <div class="left-column">
-            
             <div class="sidebar">
                 <h3>PIXEL STATS</h3>
                 <div class="stat-box">
@@ -138,7 +138,6 @@
                      (adsbygoogle = window.adsbygoogle || []).push({});
                 </script>
             </div>
-            
         </div>
 
         <div class="grid-viewport">
@@ -161,6 +160,7 @@
             <div class="field-group">
                 <label>2. Your Destination URL</label>
                 <input type="url" id="pLink" placeholder="https://www.yourwebsite.com">
+                <div id="urlError"></div>
             </div>
 
             <button class="checkout-btn" onclick="processPurchase()">PURCHASE FOR $1.00</button>
@@ -175,19 +175,16 @@
     const zoomBar = document.getElementById('zoomBar');
     const hoverTracker = document.getElementById('hover-tracker');
 
-    // Stats updates
     function updateStats(totalSold) {
         document.getElementById('stat-sold').innerText = totalSold.toLocaleString();
         document.getElementById('stat-stock').innerText = (1000000 - totalSold).toLocaleString();
     }
 
-    // Zoom adjustments
     zoomBar.oninput = function() {
         grid.style.transform = `scale(${this.value})`;
         document.getElementById('zoomVal').innerText = this.value + 'x';
     };
 
-    // Coordinate mapping logic
     function getCleanCoords(e) {
         const rect = grid.getBoundingClientRect();
         const scale = zoomBar.value;
@@ -211,16 +208,26 @@
         selY = pos.y;
         document.getElementById('coord-display').innerText = `X: ${selX} | Y: ${selY} | #${pos.num.toLocaleString()}`;
         document.getElementById('overlay').style.display = 'flex';
+        document.getElementById('urlError').innerText = '';
+        document.getElementById('pLink').value = '';
     }
 
-    function closeModal() { document.getElementById('overlay').style.display = 'none'; }
+    function closeModal() { 
+        document.getElementById('overlay').style.display = 'none'; 
+        document.getElementById('urlError').innerText = '';
+    }
 
-    // Checkout processing
     async function processPurchase() {
         const color = document.getElementById('pColor').value;
         const link = document.getElementById('pLink').value;
+        const urlError = document.getElementById('urlError');
 
-        if(!link.startsWith('http')) return alert("Please enter a valid URL.");
+        if (!link.startsWith('http')) {
+            urlError.innerText = 'Invalid';
+            return;
+        }
+
+        urlError.innerText = '';
 
         try {
             const res = await fetch('/create-checkout-session', {
@@ -232,7 +239,7 @@
             if (res.ok) {
                 const data = await res.json();
                 if (data.url) {
-                    window.location.href = data.url; 
+                    window.location.href = data.url;
                 } else {
                     alert("Could not generate a checkout link.");
                 }
@@ -246,7 +253,6 @@
         }
     }
 
-    // Canvas mapping rendering
     function renderPixel(p) {
         const a = document.createElement('a');
         a.href = p.link; 
