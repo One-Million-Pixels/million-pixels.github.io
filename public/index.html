@@ -3,35 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Million Dollar Homepage</title>
+    <title>The Million Pixels</title>
+    
+    <link rel="icon" type="image/jpeg" href="favicon.jpg">
+
     <style>
-        /* --- Restoration of the 2005 Aesthetic --- */
         body { background-color: #fff; font-family: Verdana, Arial, Helvetica, sans-serif; margin: 0; padding: 0; }
-        
         .container { width: 1200px; margin: 0 auto; text-align: center; }
         
-        /* Top Header Area */
         .header-main { padding: 20px 0; border-bottom: 1px solid #ccc; margin-bottom: 10px; }
         .header-main h1 { font-size: 32px; margin: 0; letter-spacing: -1px; }
         
-        /* Stats Bar & Zoom Bar combined */
         .top-nav { 
             background: #f4f4f4; border: 1px solid #000; padding: 10px; 
             display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 10px; font-weight: bold; font-size: 13px;
         }
 
-        /* Layout Grid */
         .layout-wrapper { display: flex; gap: 15px; align-items: flex-start; }
 
-        /* Left Sidebar Stats */
+        /* Left Sidebar */
         .sidebar { width: 180px; text-align: left; border: 1px solid #000; padding: 10px; background: #fffde0; }
         .sidebar h3 { font-size: 14px; margin-top: 0; border-bottom: 1px solid #000; padding-bottom: 5px; }
         .stat-box { margin-bottom: 15px; }
         .stat-label { font-size: 11px; color: #555; display: block; }
         .stat-value { font-size: 18px; color: #cc0000; font-weight: bold; }
 
-        /* The Grid Display */
+        /* Grid Viewport */
         .grid-viewport { 
             width: 1000px; height: 1000px; overflow: auto; 
             border: 2px solid #000; background: #fff; position: relative;
@@ -46,7 +44,7 @@
 
         .pixel-entry { position: absolute; width: 1px; height: 1px; z-index: 5; }
 
-        /* --- Improved Purchase Modal --- */
+        /* Purchase Modal */
         .modal-overlay { 
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 1000; 
@@ -66,26 +64,22 @@
             padding: 10px; text-align: center; font-size: 16px; margin-bottom: 20px;
         }
 
-        input[type="text"], input[type="url"] { 
-            width: 94%; padding: 8px; border: 1px solid #999; font-family: Verdana;
-        }
+        input[type="url"] { width: 94%; padding: 8px; border: 1px solid #999; }
 
         .checkout-btn { 
             background: #4CAF50; color: white; border: none; padding: 15px; 
             width: 100%; font-size: 18px; font-weight: bold; cursor: pointer;
             border-bottom: 4px solid #2E7D32;
         }
-        .checkout-btn:active { border-bottom: none; transform: translateY(2px); }
         .cancel-link { display: block; text-align: center; margin-top: 15px; color: #666; font-size: 11px; cursor: pointer; }
-
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header-main">
-        <h1>The Million Dollar Homepage</h1>
-        <span>1,000,000 pixels &bull; $1 per pixel &bull; Own a piece of internet history!</span>
+        <h1>The Million Pixels</h1>
+        <span>1,000,000 pixels &bull; $1 per pixel</span>
     </div>
 
     <div class="top-nav">
@@ -104,15 +98,11 @@
                 <span id="stat-sold" class="stat-value">0</span>
             </div>
             <div class="stat-box">
-                <span class="stat-label">In Stock:</span>
+                <span class="stat-label">Available:</span>
                 <span id="stat-stock" class="stat-value">1,000,000</span>
             </div>
-            <div class="stat-box">
-                <span class="stat-label">Total Earned:</span>
-                <span id="stat-cash" class="stat-value" style="color: green;">$0</span>
-            </div>
             <hr>
-            <p style="font-size: 10px; line-height: 1.4;">Click any empty space on the grid to purchase your pixel!</p>
+            <p style="font-size: 10px;">Click an empty pixel to purchase.</p>
         </div>
 
         <div class="grid-viewport">
@@ -137,13 +127,8 @@
                 <input type="url" id="pLink" placeholder="https://www.yourwebsite.com">
             </div>
 
-            <div class="field-group">
-                <label>3. Hover Tooltip Text</label>
-                <input type="text" id="pTitle" placeholder="My Awesome Business">
-            </div>
-
             <button class="checkout-btn" onclick="processPurchase()">PURCHASE FOR $1.00</button>
-            <span class="cancel-link" onclick="closeModal()">[ Cancel and Return to Map ]</span>
+            <span class="cancel-link" onclick="closeModal()">[ Cancel ]</span>
         </div>
     </div>
 </div>
@@ -154,42 +139,40 @@
     const zoomBar = document.getElementById('zoomBar');
     const hoverTracker = document.getElementById('hover-tracker');
 
-    // --- Stats Update ---
     function updateStats(totalSold) {
         document.getElementById('stat-sold').innerText = totalSold.toLocaleString();
         document.getElementById('stat-stock').innerText = (1000000 - totalSold).toLocaleString();
-        document.getElementById('stat-cash').innerText = '$' + totalSold.toLocaleString();
     }
 
-    // --- Zoom Management ---
     zoomBar.oninput = function() {
-        const scale = this.value;
-        grid.style.transform = `scale(${scale})`;
-        document.getElementById('zoomVal').innerText = scale + 'x';
+        grid.style.transform = `scale(${this.value})`;
+        document.getElementById('zoomVal').innerText = this.value + 'x';
     };
 
-    // --- Real-time Hover Logic ---
-    function handleHover(e) {
+    // Glitch Fix: Clamp coordinates between 0 and 999
+    function getCleanCoords(e) {
         const rect = grid.getBoundingClientRect();
         const scale = zoomBar.value;
-        const x = Math.floor((e.clientX - rect.left) / scale);
-        const y = Math.floor((e.clientY - rect.top) / scale);
-
-        if (x >= 0 && x < 1000 && y >= 0 && y < 1000) {
-            const pixelNum = (y * 1000) + x + 1;
-            hoverTracker.innerText = `X: ${x}, Y: ${y} | Pixel #${pixelNum.toLocaleString()}`;
-        }
+        let x = Math.floor((e.clientX - rect.left) / scale);
+        let y = Math.floor((e.clientY - rect.top) / scale);
+        
+        // Ensure no negative values or overflow
+        x = Math.max(0, Math.min(999, x));
+        y = Math.max(0, Math.min(999, y));
+        
+        return { x, y, num: (y * 1000) + x + 1 };
     }
 
-    // --- Click/Purchase Logic ---
-    function handleGridClick(e) {
-        const rect = grid.getBoundingClientRect();
-        const scale = zoomBar.value;
-        selX = Math.floor((e.clientX - rect.left) / scale);
-        selY = Math.floor((e.clientY - rect.top) / scale);
-        const pixelNum = (selY * 1000) + selX + 1;
+    function handleHover(e) {
+        const pos = getCleanCoords(e);
+        hoverTracker.innerText = `X: ${pos.x}, Y: ${pos.y} | Pixel #${pos.num.toLocaleString()}`;
+    }
 
-        document.getElementById('coord-display').innerText = `X: ${selX} | Y: ${selY} | #${pixelNum.toLocaleString()}`;
+    function handleGridClick(e) {
+        const pos = getCleanCoords(e);
+        selX = pos.x;
+        selY = pos.y;
+        document.getElementById('coord-display').innerText = `X: ${selX} | Y: ${selY} | #${pos.num.toLocaleString()}`;
         document.getElementById('overlay').style.display = 'flex';
     }
 
@@ -198,21 +181,18 @@
     async function processPurchase() {
         const color = document.getElementById('pColor').value;
         const link = document.getElementById('pLink').value;
-        const title = document.getElementById('pTitle').value || link;
 
-        if(!link.startsWith('http')) return alert("Please enter a valid URL (including http/https)");
+        if(!link.startsWith('http')) return alert("Please enter a valid URL.");
 
-        // Assuming Backend exists as per previous steps
         const res = await fetch('/api/purchase', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ x: selX, y: selY, color, link, title })
+            body: JSON.stringify({ x: selX, y: selY, color, link })
         });
 
         if (res.ok) {
-            renderPixel({x: selX, y: selY, color, link, title});
+            renderPixel({x: selX, y: selY, color, link});
             closeModal();
-            // Refresh stats
             loadPixels();
         }
     }
@@ -222,7 +202,6 @@
         a.href = p.link; a.target = "_blank"; a.className = 'pixel-entry';
         a.style.left = p.x + 'px'; a.style.top = p.y + 'px';
         a.style.backgroundColor = p.color;
-        a.title = p.title || p.link;
         grid.appendChild(a);
     }
 
@@ -230,10 +209,10 @@
         try {
             const res = await fetch('/api/pixels');
             const data = await res.json();
-            grid.innerHTML = ''; // Clear for re-render
+            grid.innerHTML = '';
             data.forEach(renderPixel);
             updateStats(data.length);
-        } catch(e) { console.log("Offline mode or Server not running."); }
+        } catch(e) {}
     }
 
     loadPixels();
