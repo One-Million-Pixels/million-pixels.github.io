@@ -3,40 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Million Pixels</title>
+    <title>The Million Pixels</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    
     <style>
         body { background-color: #f0f0f0; font-family: "Courier New", Courier, monospace; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         h1 { color: #cc0000; font-size: 32px; margin-bottom: 5px; }
         .stats { margin-bottom: 20px; font-weight: bold; }
         
         #main-grid {
-            width: 1000px;
-            height: 1000px;
-            background-color: white;
-            border: 2px solid #999;
-            position: relative;
-            cursor: crosshair;
-            /* Visual lines every 1px are too messy, so we show them every 10px */
-            background-image: 
-                linear-gradient(to right, #eee 1px, transparent 1px),
-                linear-gradient(to bottom, #eee 1px, transparent 1px);
+            width: 1000px; height: 1000px; background-color: white; border: 2px solid #999;
+            position: relative; cursor: crosshair;
+            background-image: linear-gradient(to right, #eee 1px, transparent 1px), linear-gradient(to bottom, #eee 1px, transparent 1px);
             background-size: 10px 10px;
         }
 
-        .pixel {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-        }
-
-        .overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 100;
-        }
-        .modal { background: white; padding: 20px; border-radius: 5px; width: 300px; }
-        input { width: 100%; margin: 10px 0; padding: 8px; box-sizing: border-box; }
-        label { font-size: 12px; font-weight: bold; }
-        button { background: #008000; color: white; padding: 10px; width: 100%; border: none; cursor: pointer; font-weight: bold; }
+        .pixel { position: absolute; width: 1px; height: 1px; }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 100; }
+        
+        .modal { background: white; padding: 25px; border-radius: 8px; width: 320px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        .modal h3 { margin-top: 0; color: #333; }
+        
+        input { width: 100%; margin: 8px 0; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        
+        /* Color Preview Swatch */
+        .color-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        #colorPreview { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #ddd; background-color: #ff0000; }
+        
+        #error-msg { color: #cc0000; font-size: 12px; margin: 0; display: none; font-weight: bold; }
+        
+        button { background: #008000; color: white; padding: 12px; width: 100%; border: none; cursor: pointer; font-weight: bold; border-radius: 4px; font-size: 16px; transition: 0.2s; }
+        button:hover { background: #006400; }
+        button:disabled { background: #888; cursor: not-allowed; }
     </style>
 </head>
 <body>
@@ -48,83 +46,100 @@
 
     <div class="overlay" id="purchaseOverlay">
         <div class="modal">
-            <h3>Buy 1 Pixel ($1.00)</h3>
-            <p id="coords-display">Coordinates: (0,0)</p>
+            <h3>Buy This Pixel ($1.00)</h3>
+            <p id="coords-display" style="font-size: 14px; color: #666;">Coordinates: (0,0)</p>
             
-            <label>Pick Pixel Color:</label>
-            <input type="color" id="pixelColor" value="#ff0000">
+            <label style="font-size: 12px; font-weight: bold;">Step 1: Pick Color</label>
+            <div class="color-row">
+                <input type="color" id="pixelColor" value="#ff0000" oninput="updatePreview(this.value)" style="width: 60px; height: 40px; padding: 2px; cursor: pointer;">
+                <div id="colorPreview"></div>
+            </div>
+
+            <label style="font-size: 12px; font-weight: bold;">Step 2: Destination Link</label>
+            <input type="text" id="linkUrl" placeholder="https://your-website.com" oninput="hideError()">
+            <p id="error-msg">Invalid website. Must start with https://</p>
             
-            <label>Link Website:</label>
-            <input type="text" id="linkUrl" placeholder="https://yourwebsite.com">
-            
-            <button id="buyBtn" onclick="submitPurchase()">Buy Pixel</button>
-            <button onclick="closeModal()" style="background:#888; margin-top:5px;">Cancel</button>
+            <button id="buyBtn" onclick="submitPurchase()">Purchase Pixel</button>
+            <button onclick="closeModal()" style="background:#f0f0f0; color: #333; margin-top:10px; font-size: 14px;">Cancel</button>
         </div>
     </div>
 
     <script>
-        let currentX = 0;
-        let currentY = 0;
+        let currentX = 0, currentY = 0;
+        const grid = document.getElementById('main-grid');
+
+        function updatePreview(val) {
+            document.getElementById('colorPreview').style.backgroundColor = val;
+        }
+
+        function hideError() {
+            document.getElementById('error-msg').style.display = 'none';
+        }
 
         function openPurchaseModal(e) {
-            const rect = document.getElementById('main-grid').getBoundingClientRect();
-            // Individual pixel selection (1x1)
+            const rect = grid.getBoundingClientRect();
             currentX = Math.floor(e.clientX - rect.left);
             currentY = Math.floor(e.clientY - rect.top);
-
             document.getElementById('coords-display').innerText = `Coordinates: (${currentX}, ${currentY})`;
             document.getElementById('purchaseOverlay').style.display = 'flex';
         }
 
-        function closeModal() {
-            document.getElementById('purchaseOverlay').style.display = 'none';
+        function closeModal() { 
+            document.getElementById('purchaseOverlay').style.display = 'none'; 
+            hideError();
         }
 
         async function submitPurchase() {
             const color = document.getElementById('pixelColor').value;
             const link = document.getElementById('linkUrl').value;
+            const errorText = document.getElementById('error-msg');
             const btn = document.getElementById('buyBtn');
 
-            if(!link.startsWith('http')) return alert("Please enter a valid URL starting with http:// or https://");
+            // Inline validation instead of alert
+            if(!link.startsWith('http')) {
+                errorText.style.display = 'block';
+                return;
+            }
 
-            btn.innerText = "Redirecting...";
+            btn.innerText = "Connecting to Stripe...";
             btn.disabled = true;
 
-            // This calls your Render server
-            const response = await fetch('/create-checkout-session', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ x: currentX, y: currentY, color, link })
-            });
-
-            const session = await response.json();
-            if(session.url) {
-                window.location.href = session.url; // Go to Stripe
-            } else {
-                alert("Error connecting to Stripe.");
-                btn.innerText = "Buy Pixel";
+            try {
+                const res = await fetch('/create-checkout-session', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ x: currentX, y: currentY, color, link })
+                });
+                const session = await res.json();
+                if(session.url) window.location.href = session.url;
+            } catch (e) {
+                btn.innerText = "Error - Try Again";
                 btn.disabled = false;
             }
         }
 
-        function renderPixel(data) {
-            const pix = document.createElement('a');
-            pix.href = data.link;
-            pix.target = "_blank";
-            pix.className = 'pixel';
-            pix.style.left = data.x + 'px';
-            pix.style.top = data.y + 'px';
-            pix.style.backgroundColor = data.color;
-            pix.title = `Pixel (${data.x},${data.y}) - ${data.link}`;
-            document.getElementById('main-grid').appendChild(pix);
+        function renderPixel(p) {
+            const div = document.createElement('a');
+            div.href = p.link; div.target = "_blank"; div.className = 'pixel';
+            div.style.left = p.x + 'px'; div.style.top = p.y + 'px';
+            div.style.backgroundColor = p.color;
+            div.title = `Coordinates: ${p.x},${p.y}`;
+            grid.appendChild(div);
         }
 
-        window.onload = async () => {
-            const res = await fetch('/api/pixels');
-            const pixels = await res.json();
-            pixels.forEach(renderPixel);
-            document.getElementById('stats').innerText = `Sold: ${pixels.length}/1,000,000 pixels | $${pixels.length} Raised`;
-        };
+        async function loadPixels() {
+            try {
+                const res = await fetch('/api/pixels');
+                const pixels = await res.json();
+                if(Array.isArray(pixels)) {
+                    pixels.forEach(renderPixel);
+                    document.getElementById('stats').innerText = `Sold: ${pixels.length}/1,000,000 pixels | $${pixels.length} Raised`;
+                }
+            } catch (err) { 
+                document.getElementById('stats').innerText = `Sold: 0/1,000,000 pixels | $0 Raised`;
+            }
+        }
+        loadPixels();
     </script>
 </body>
 </html>
