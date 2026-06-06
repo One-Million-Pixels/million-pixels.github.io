@@ -36,26 +36,25 @@ app.post('/webhook', express.raw({type: 'application/json'}), async (req, res) =
     res.json({received: true});
 });
 
-// Standard JSON parsers and static directories applied below webhook configurations
+// Standard JSON parses and static directories applied below webhook configurations
 app.use(express.json());
 app.use(express.static('public')); 
 
-// Pass-through route using your custom Stripe Payment Link
+// Pass-through route using your updated custom Stripe Payment Link
 app.post('/create-checkout-session', async (req, res) => {
     const { x, y, color, link } = req.body;
     
     try {
-        // Base payment link provided by you
-        const basePaymentLink = "https://buy.stripe.com/7sY14g0emb4F2UNgoa2sM01";
+        // Base payment link updated to your new link
+        const basePaymentLink = "https://buy.stripe.com/14A5kwf9g8WxeDv8VI2sM02";
         
-        // Encode metadata directly into the URL parameters for the payment link
+        // Unique tracking identifier based on coordinates
         const client_reference_id = `pixel_${x}_${y}`;
         
-        // Stripe payment links allow passing metadata through URL parameters: ?prefilled_promo_code= etc.
-        // To natively pass custom metadata strings, we append client_reference_id or pass metadata parameters
+        // Append metadata directly to your new link as URL parameters
         const stripeUrl = `${basePaymentLink}?client_reference_id=${client_reference_id}&prefilled_metadata[x]=${x}&prefilled_metadata[y]=${y}&prefilled_metadata[color]=${encodeURIComponent(color)}&prefilled_metadata[link]=${encodeURIComponent(link)}`;
 
-        // Send URL back to client to redirect
+        // Return the tracking-ready URL back to the frontend
         res.json({ url: stripeUrl });
     } catch (e) {
         res.status(500).json({ error: e.message });
