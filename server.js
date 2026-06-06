@@ -20,14 +20,18 @@ app.post('/webhook', express.raw({type: 'application/json'}), async (req, res) =
 
     if (event.type === 'checkout.session.completed') {
         const data = event.data.object.metadata;
-        await db.insert({ 
-            x: parseInt(data.x), 
-            y: parseInt(data.y), 
-            color: data.color, 
-            link: data.link,
-            timestamp: new Date()
-        });
-        console.log(`Pixel at ${data.x}, ${data.y} saved!`);
+        
+        // Ensure metadata exists before injecting into database
+        if (data && data.x && data.y) {
+            await db.insert({ 
+                x: parseInt(data.x), 
+                y: parseInt(data.y), 
+                color: data.color, 
+                link: data.link,
+                timestamp: new Date()
+            });
+            console.log(`Pixel at ${data.x}, ${data.y} saved!`);
+        }
     }
     res.json({received: true});
 });
@@ -36,31 +40,23 @@ app.post('/webhook', express.raw({type: 'application/json'}), async (req, res) =
 app.use(express.json());
 app.use(express.static('public')); 
 
-// Create Dynamic Stripe Session
+// Pass-through route using your custom Stripe Payment Link
 app.post('/create-checkout-session', async (req, res) => {
     const { x, y, color, link } = req.body;
     
     try {
-        const session = await stripe.checkout.sessions.create({
-            payment_method_types: ['card'],
-            line_items: [{
-                price_data: {
-                    currency: 'usd',
-                    product_data: { 
-                        name: `Pixel at ${x}, ${y}`,
-                        description: `Color: ${color} | Link: ${link}`
-                    },
-                    unit_amount: 100, // $1.00
-                },
-                quantity: 1,
-            }],
-            mode: 'payment',
-            metadata: { x, y, color, link },
-            success_url: `https://${req.get('host')}/index.html?status=success`,
-            cancel_url: `https://${req.get('host')}/`,
-        });
+        // Base payment link provided by you
+        const basePaymentLink = "https://buy.stripe.com/7sY14g0emb4F2UNgoa2sM01";
+        
+        // Encode metadata directly into the URL parameters for the payment link
+        const client_reference_id = `pixel_${x}_${y}`;
+        
+        // Stripe payment links allow passing metadata through URL parameters: ?prefilled_promo_code= etc.
+        // To natively pass custom metadata strings, we append client_reference_id or pass metadata parameters
+        const stripeUrl = `${basePaymentLink}?client_reference_id=${client_reference_id}&prefilled_metadata[x]=${x}&prefilled_metadata[y]=${y}&prefilled_metadata[color]=${encodeURIComponent(color)}&prefilled_metadata[link]=${encodeURIComponent(link)}`;
 
-        res.json({ url: session.url });
+        // Send URL back to client to redirect
+        res.json({ url: stripeUrl });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
